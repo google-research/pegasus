@@ -34,7 +34,9 @@ export PYTHONPATH=.
 pip3 install -r requirements.txt
 ```
 
-Download vocab and model checkpoint
+Install [gsutil](https://cloud.google.com/storage/docs/gsutil_install).
+
+Download vocab and model checkpoint.
 
 ```
 sudo apt install gsutil
