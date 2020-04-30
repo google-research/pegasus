@@ -34,12 +34,14 @@ export PYTHONPATH=.
 pip3 install -r requirements.txt
 ```
 
-Download vocab and model checkpoint
+Install [gsutil](https://cloud.google.com/storage/docs/gsutil_install).
+
+Download vocab and model checkpoints (pre-trained and fine-tuned).
 
 ```
 sudo apt install gsutil
 mkdir ckpt
-gsutil cp gs://pegasus_ckpt/* ckpt/
+gsutil cp -r gs://pegasus_ckpt/ ckpt/
 
 ```
 
