@@ -5,6 +5,38 @@ Sequence-to-sequence models, or PEGASUS, uses self-supervised objective Gap
 Sentences Generation (GSG) to train a transformer encoder-decoder model. The
 paper can be found on [arXiv](https://arxiv.org/abs/1912.08777).
 
+# Results update
+
+We train a dynamic gap sentence generation model on both C4 and HugeNews, and dynamicly sample important sentences. The updated the results are reported in this table.
+
+| dataset | C4 | HugeNews | Mixed & Dynamic|
+| ---- | ---- | ---- | ----|
+| xsum | 45.20/22.06/36.99 | 47.36/24.54/39.19 | 47.60/24.83/39.64|
+| cnn_dailymail | 43.90/21.20/31.01 | 44.17/21.47/31.24 | 44.16/21.56/41.30|
+| newsroom | 45.07/33.39/41.28 | 45.15/33.51/41.33 | 45.98/34.20/42.18|
+| multi_news | 46.99/17.88/24.23 | 47.52/18.72/24.91 | 47.65/18.75/24.95|
+| gigaword | 38.75/19.96/36.14 | 39.12/19.86/36.24 | 39.65/20.47/36.76|
+| wikihow | 43.07/19.70/34.79 | 41.37/18.55/33.40 | 46.39/22.12/38.41 *|
+| reddit_tifu | 26.54/8.94/21.64 | 26.63/9.01/21.60 | 27.99/9.81/22.94|
+| big_patent | 53.27/31.32/40.71 | 53.21/31.17/40.67 | 52.29/33.08/41.66 *|
+| arxiv | 44.81/17.21/25.65 | 44.72/17.12/25.56 | 44.21/16.95/25.67|
+| pubmed | 45.49/19.90/27.69 | 45.09/19.56/27.42 | 45.97/20.15/28.25|
+| aeslc | 37.69/21.85/36.84 | 37.40/21.22/36.45 | 37.68/21.25/36.51|
+| billsum | 57.20/39.56/45.80 | 57.31/40.19/45.82 | 59.67/41.58/47.59|
+
+The "Mixed & Dynamic" model has the following changes:
+- trained on both C4 and HugeNews (dataset mixsure is weighted by their number of examples). 
+- trained for 1.5M instead of 500k (we observe slower convergence on pretraining perplexity).
+- the model dynamicly choose 15%-45% important sentences to generate
+- importance sentences are sampled instead of using a fixed strategy (This is done by adding a 20% noise to importance scores.) 
+- the sentencepiece tokenizer is updated to be able to encode newline character.
+
+
+(*) the numbers of wikihow and big_patent datasets are not comparable because of change in tokenization and data:
+- wikihow dataset contains newline characters which is useful for paragraph segmentation, the C4 and HugeNews model's sentencepiece tokenizer doesn't encode newline and loose this information.
+- we update the BigPatent dataset to preserve casing, some format cleanings are also changed, please refer to change in TFDS.
+
+
 # Setup
 
 ## create an instance on google cloud with GPU (optional)
@@ -36,7 +68,7 @@ pip3 install -r requirements.txt
 
 Follow the instruction and install [gsutil](https://cloud.google.com/storage/docs/gsutil_install).
 
-Download vocab and model checkpoints (pre-trained and fine-tuned).
+Download vocab, pretrained and fine-tuned checkpoints of the "Mixed & Dynamic" model .
 
 ```
 mkdir ckpt
