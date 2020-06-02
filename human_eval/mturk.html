@@ -1,0 +1,79 @@
+<!-- You must include this JavaScript file -->
+<script src="https://assets.crowd.aws/crowd-html-elements.js"></script>
+<link href="https://s3.amazonaws.com/mturk-public/bs30/css/bootstrap.min.css" rel="stylesheet" />
+ 
+<!-- For the full list of available Crowd HTML Elements and their input/output documentation,
+      please refer to https://docs.aws.amazon.com/sagemaker/latest/dg/sms-ui-template-reference.html -->
+ 
+<!-- You must include crowd-form so that your task submits answers to MTurk -->
+<crowd-form answer-format="flatten-objects">
+<div class="container"> 
+<div class="row">
+    <p>
+      <strong>
+        Read the document below, then rate the summaries for quality on a scale of 1-5.
+        (1 = Poor summary, 5 = Great summary)
+      </strong>
+    </p>
+ 
+ 
+ 
+    <p>
+        <strong>Document: </strong>
+        
+        <br><small>${document}</small>
+    </p>
+</div>
+    
+<hr>
+ 
+<div class="row">    
+    <div class="col-sm-6">
+        <p>
+            <strong>Summary:</strong> 
+        </p>
+        <p>
+            ${summary0}
+        </p>
+    <crowd-slider name="quality0" min="1" max="5" required pin></crowd-slider>    
+    </div>
+    
+    
+    <div class="col-sm-6">
+        <p>
+            <strong>Summary:</strong> 
+        </p>
+        <p>
+            ${summary1}
+        </p>
+        <crowd-slider name="quality1" min="1" max="5" required pin></crowd-slider>    
+    </div>
+    
+</div>
+<hr>
+ 
+<div class="row">    
+    <div class="col-sm-6">
+        <p>
+            <strong>Summary:</strong> 
+            </p>
+        <p>
+            ${summary2}
+        </p>
+        <crowd-slider name="quality2" min="1" max="5" required pin></crowd-slider>
+    </div>
+    
+    <div class="col-sm-6">
+        <p>
+            <strong>Summary:</strong> 
+            </p>
+        <p>
+            ${summary3}
+        </p>
+        <crowd-slider name="quality3" min="1" max="5" required pin></crowd-slider>
+    </div>
+</div>
+ 
+<hr>
+ 
+</crowd-form>
