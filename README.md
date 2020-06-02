@@ -5,6 +5,18 @@ Sequence-to-sequence models, or PEGASUS, uses self-supervised objective Gap
 Sentences Generation (GSG) to train a transformer encoder-decoder model. The
 paper can be found on [arXiv](https://arxiv.org/abs/1912.08777).
 
+If you use this code or these models, please cite the following paper:
+```
+@misc{zhang2019pegasus,
+    title={PEGASUS: Pre-training with Extracted Gap-sentences for Abstractive Summarization},
+    author={Jingqing Zhang and Yao Zhao and Mohammad Saleh and Peter J. Liu},
+    year={2019},
+    eprint={1912.08777},
+    archivePrefix={arXiv},
+    primaryClass={cs.CL}
+}
+```
+
 # Results update
 
 We train a dynamic gap sentence generation model on both C4 and HugeNews, and dynamicly sample important sentences. The updated the results are reported in this table.
