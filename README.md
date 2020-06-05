@@ -3,7 +3,7 @@
 Pre-training with Extracted Gap-sentences for Abstractive SUmmarization
 Sequence-to-sequence models, or PEGASUS, uses self-supervised objective Gap
 Sentences Generation (GSG) to train a transformer encoder-decoder model. The
-paper can be found on [arXiv](https://arxiv.org/abs/1912.08777).
+paper can be found on [arXiv](https://arxiv.org/abs/1912.08777). ICML 2020 accepted.
 
 If you use this code or these models, please cite the following paper:
 ```
