@@ -96,17 +96,17 @@ Finetune on an existing dataset `aeslc`.
 
 ```
 python3 pegasus/bin/train.py --params=aeslc_transformer \
---param_overrides=vocab_filename=ckpt/c4.unigram.newline.10pct.96000.model \
---train_init_checkpoint=ckpt/model.ckpt-1500000 \
---model_dir=aeslc
+--param_overrides=vocab_filename=ckpt/pegasus_ckpt/c4.unigram.newline.10pct.96000.model \
+--train_init_checkpoint=ckpt/pegasus_ckpt/model.ckpt-1500000 \
+--model_dir=ckpt/pegasus_ckpt/aeslc
 ```
 
 Evaluate on the finetuned dataset.
 
 ```
 python3 pegasus/bin/evaluate.py --params=aeslc_transformer \
---param_overrides=vocab_filename=ckpt/c4.unigram.newline.10pct.96000.model,batch_size=1,beam_size=5,beam_alpha=0.6 \
---model_dir=aeslc
+--param_overrides=vocab_filename=ckpt/pegasus_ckpt/c4.unigram.newline.10pct.96000.model,batch_size=1,beam_size=5,beam_alpha=0.6 \
+--model_dir=ckpt/pegasus_ckpt/aeslc
 ```
 
 Note that the above example is using a single GPU so the batch_size is much smaller
