@@ -37,7 +37,7 @@ We train a dynamic gap sentence generation model on both C4 and HugeNews, and dy
 | billsum | 57.20/39.56/45.80 | 57.31/40.19/45.82 | 59.67/41.58/47.59|
 
 The "Mixed & Dynamic" model has the following changes:
-- trained on both C4 and HugeNews (dataset mixsure is weighted by their number of examples). 
+- trained on both C4 and HugeNews (dataset mixture is weighted by their number of examples). 
 - trained for 1.5M instead of 500k (we observe slower convergence on pretraining perplexity).
 - the model dynamicly choose 15%-45% important sentences to generate
 - importance sentences are sampled instead of using a fixed strategy (This is done by adding a 20% noise to importance scores.) 
