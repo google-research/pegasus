@@ -1,4 +1,4 @@
-# Copyright 2020 The PEGASUS Authors..
+# Copyright 2022 The PEGASUS Authors..
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,13 +40,13 @@ setuptools.setup(
         'rouge-score',
         'sacrebleu',
         'sentencepiece',
+        'tensorflow==1.15'
         'tensorflow-text==1.15.0rc0',
         'tfds-nightly',
         'tensor2tensor==1.15.0',
-        'tensorflow-gpu==1.15.2',
     ],
     extras_require={
-        'tensorflow': ['tensorflow-gpu==1.15.2'],
+        'tensorflow': ['tensorflow==1.15'],
     },
     classifiers=[
         'Development Status :: 4 - Beta',
