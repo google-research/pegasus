@@ -19,9 +19,9 @@ If you use this code or these models, please cite the following paper:
 
 # Results update
 
-We train a dynamic gap sentence generation model on both C4 and HugeNews, and dynamicly sample important sentences. The updated the results are reported in this table.
+We train a pegasus model with sampled gap sentence ratios on both C4 and HugeNews, and stochastically sample important sentences. The updated the results are reported in this table.
 
-| dataset | C4 | HugeNews | Mixed & Dynamic|
+| dataset | C4 | HugeNews | Mixed & Stochastic|
 | ---- | ---- | ---- | ----|
 | xsum | 45.20/22.06/36.99 | 47.21/24.56/39.25 | 47.60/24.83/39.64|
 | cnn_dailymail | 43.90/21.20/40.76 | 44.17/21.47/41.11 | 44.16/21.56/41.30|
@@ -36,11 +36,11 @@ We train a dynamic gap sentence generation model on both C4 and HugeNews, and dy
 | aeslc | 37.69/21.85/36.84 | 37.40/21.22/36.45 | 37.68/21.25/36.51|
 | billsum | 57.20/39.56/45.80 | 57.31/40.19/45.82 | 59.67/41.58/47.59|
 
-The "Mixed & Dynamic" model has the following changes:
+The "Mixed & Stochastic" model has the following changes:
 - trained on both C4 and HugeNews (dataset mixture is weighted by their number of examples). 
 - trained for 1.5M instead of 500k (we observe slower convergence on pretraining perplexity).
-- the model dynamicly choose 15%-45% important sentences to generate
-- importance sentences are sampled instead of using a fixed strategy (This is done by adding a 20% noise to importance scores.) 
+- the model uniformly sample a gap sentence ratio between 15% and 45%.
+- importance sentences are sampled using a 20% uniform noise to importance scores.
 - the sentencepiece tokenizer is updated to be able to encode newline character.
 
 
@@ -80,7 +80,7 @@ pip3 install -r requirements.txt
 
 Follow the instruction and install [gsutil](https://cloud.google.com/storage/docs/gsutil_install).
 
-Download vocab, pretrained and fine-tuned checkpoints of the "Mixed & Dynamic" model .
+Download vocab, pretrained and fine-tuned checkpoints of all experiments.
 
 ```
 mkdir ckpt
