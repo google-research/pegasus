@@ -40,7 +40,7 @@ The "Mixed & Stochastic" model has the following changes:
 - trained on both C4 and HugeNews (dataset mixture is weighted by their number of examples). 
 - trained for 1.5M instead of 500k (we observe slower convergence on pretraining perplexity).
 - the model uniformly sample a gap sentence ratio between 15% and 45%.
-- importance sentences are sampled instead of using a fixed strategy (This is done by adding a 20% noise to importance scores.) 
+- importance sentences are sampled using a 20% uniform noise to importance scores.
 - the sentencepiece tokenizer is updated to be able to encode newline character.
 
 
