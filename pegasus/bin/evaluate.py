@@ -88,7 +88,7 @@ def main(_):
 
   while True:
     if tf.train.checkpoint_exists(FLAGS.model_dir):
-
+      logging.warning("Loading model checkpoint from {}".format(FLAGS.model_dir))
       # If checkpoint provided instead of dir, convert eval dir to parent dir.
       if tf.io.gfile.isdir(FLAGS.model_dir):
         eval_dir = FLAGS.model_dir
@@ -108,14 +108,17 @@ def main(_):
                            "instead of a specified checkpoint.")
 
       params = registry.get_params(FLAGS.params)(FLAGS.param_overrides)
+      logging.warning("These are the params: {}".format(params))
       if FLAGS.evaluate_test:
         pattern = params.test_pattern
         logging.warning("Evaluating on test set. "
                         "This should be only used for final number report.")
       else:
         pattern = params.dev_pattern
+      logging.warning("Getting the input function...")
       input_fn = infeed.get_input_fn(params.parser, pattern,
                                      tf.estimator.ModeKeys.PREDICT)
+      logging.warning("Creating the estimator...")
       estimator = estimator_utils.create_estimator(FLAGS.master, eval_dir,
                                                    FLAGS.use_tpu,
                                                    FLAGS.iterations_per_loop,
@@ -124,7 +127,7 @@ def main(_):
         global_step = int(checkpoint_path.split("-")[-1])
       else:
         global_step = estimator.get_variable_value("global_step")
-
+      logging.warning("Here we define the predictions function to be passed to the estimator...")
       predictions = estimator.predict(
           input_fn=input_fn, checkpoint_path=checkpoint_path)
       if not FLAGS.full:
@@ -139,10 +142,10 @@ def main(_):
         eval_tag += ".dev"
       if FLAGS.full:
         eval_tag += ".full"
-
+      logging.warning("Entering predictions -> saving INPUT/TARGET/PREDS to {}".format(FLAGS.model_dir))
       params.eval(predictions, eval_dir, global_step, eval_tag,
                   FLAGS.enable_logging)
-
+      logging.warning("Evaluations completed -> saving text metrics to {}".format(FLAGS.model_dir))
       break
     time.sleep(10)
 
