@@ -57,7 +57,7 @@ def get_input_fn(parser_fn,
 
 def serving_input_fn(params):
   """Returns expected input spec for exported savedmodels."""
-  inputs_ph = tf.placeholder(
+  inputs_ph = tf.compat.v1.placeholder(
       dtype=tf.string, shape=[params.batch_size], name="inputs")
 
   inputs = public_parsing_ops.encode(inputs_ph, params.max_input_len,

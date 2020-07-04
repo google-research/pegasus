@@ -82,12 +82,12 @@ def _get_best_checkpoint_id(model_dir):
 
 
 def main(_):
-  if not FLAGS.wait and not tf.train.checkpoint_exists(FLAGS.model_dir):
+  if not FLAGS.wait and not tf.compat.v1.train.checkpoint_exists(FLAGS.model_dir):
     raise ValueError(("Checkpoints %s doesn't exist " % FLAGS.model_dir,
                       "and evaluation doesn't wait."))
 
   while True:
-    if tf.train.checkpoint_exists(FLAGS.model_dir):
+    if tf.compat.v1.train.checkpoint_exists(FLAGS.model_dir):
 
       # If checkpoint provided instead of dir, convert eval dir to parent dir.
       if tf.io.gfile.isdir(FLAGS.model_dir):
@@ -149,5 +149,5 @@ def main(_):
 
 if __name__ == "__main__":
   flags.mark_flags_as_required(["params", "model_dir"])
-  tf.enable_eager_execution()
-  tf.app.run(main)
+  tf.compat.v1.enable_eager_execution()
+  tf.compat.v1.app.run(main)

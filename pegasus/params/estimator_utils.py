@@ -46,7 +46,7 @@ def create_estimator(master,
   run_config = tpu_config.RunConfig(
       master=master,
       model_dir=model_dir,
-      session_config=tf.ConfigProto(
+      session_config=tf.compat.v1.ConfigProto(
           allow_soft_placement=True, log_device_placement=False),
       tpu_config=tpu_config.TPUConfig(iterations_per_loop),
       save_checkpoints_steps=save_checkpoints_steps,
@@ -75,8 +75,8 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
     del config
     del params
 
-    tf.get_variable_scope().set_initializer(
-        tf.variance_scaling_initializer(
+    tf.compat.v1.get_variable_scope().set_initializer(
+        tf.compat.v1.variance_scaling_initializer(
             1.0, mode="fan_avg", distribution="uniform"))
 
     if mode == tf.estimator.ModeKeys.PREDICT:
@@ -94,12 +94,12 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
                 model_params.encoder_type)
           return tensor_dict
 
-        contrib_tpu.outside_compilation(decode_host_call, predictions)
+        tf.compat.v1.tpu.outside_compilation(decode_host_call, predictions)
       return tpu_estimator.TPUEstimatorSpec(mode=mode, predictions=predictions)
 
     training = mode == tf.estimator.ModeKeys.TRAIN
     if use_tpu and model_params.use_bfloat16:
-      with contrib_tpu.bfloat16_scope():
+      with tf.compat.v1.tpu.bfloat16_scope():
         loss, outputs = model_params.model()(features, training)
     else:
       loss, outputs = model_params.model()(features, training)
@@ -110,12 +110,12 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
 
     if mode == tf.estimator.ModeKeys.TRAIN:
       init_lr = model_params.learning_rate
-      global_step = tf.train.get_global_step()
-      lr = init_lr / 0.01 * tf.rsqrt(
-          tf.maximum(tf.to_float(global_step), 10000))
+      global_step = tf.compat.v1.train.get_global_step()
+      lr = init_lr / 0.01 * tf.math.rsqrt(
+          tf.maximum(tf.cast(global_step, dtype=tf.float32), 10000))
       if train_init_checkpoint:
         lr = tf.minimum(
-            tf.to_float(global_step + 1) / train_warmup_steps * init_lr, lr)
+            tf.cast(global_step + 1, dtype=tf.float32) / train_warmup_steps * init_lr, lr)
 
       optimizer = adafactor.AdafactorOptimizer(
           learning_rate=lr,
@@ -163,12 +163,12 @@ def add_scalars_to_summary(summary_dir, scalar_tensors_dict):
   }
 
   def host_call_fn(**kwargs):
-    writer = contrib_summary.create_file_writer(summary_dir, max_queue=1000)
-    always_record = contrib_summary.always_record_summaries()
+    writer = tf.compat.v2.summary.create_file_writer(summary_dir, max_queue=1000)
+    always_record = tf.compat.v2.summary.record_if(True)
     with writer.as_default(), always_record:
       for name, scalar in kwargs.items():
-        contrib_summary.scalar(name, tf.reduce_mean(scalar))
-      return contrib_summary.all_summary_ops()
+        tf.compat.v2.summary.scalar(name, tf.reduce_mean(input_tensor=scalar), step=tf.compat.v1.train.get_or_create_global_step())
+      return tf.compat.v1.summary.all_v2_summary_ops()
 
   return host_call_fn, scalar_tensors_dict
 
@@ -186,7 +186,7 @@ def _load_vars_from_checkpoint(use_tpu, init_checkpoint):
   """
   if not init_checkpoint:
     return None
-  tvars = tf.trainable_variables()
+  tvars = tf.compat.v1.trainable_variables()
   (assignment_map,
    initialized_variable_names) = get_assignment_map_from_checkpoint(
        tvars, init_checkpoint)
@@ -197,12 +197,12 @@ def _load_vars_from_checkpoint(use_tpu, init_checkpoint):
   if use_tpu:
 
     def tpu_scaffold():
-      tf.train.init_from_checkpoint(init_checkpoint, assignment_map)
-      return tf.train.Scaffold()
+      tf.compat.v1.train.init_from_checkpoint(init_checkpoint, assignment_map)
+      return tf.compat.v1.train.Scaffold()
 
     scaffold_fn = tpu_scaffold
   else:
-    tf.train.init_from_checkpoint(init_checkpoint, assignment_map)
+    tf.compat.v1.train.init_from_checkpoint(init_checkpoint, assignment_map)
 
   logging.info("**** Trainable Variables ****")
   for var in tvars:

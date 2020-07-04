@@ -34,7 +34,7 @@ def encode(text: tf.Tensor, max_len: int, vocab_filename: str,
   """EncodeOp."""
   if encoder_type not in ["sentencepiece", "sentencepiece_newline"]:
     raise ValueError("Unsupported encoder type: %s" % encoder_type)
-  sp_model = tf.gfile.GFile(vocab_filename, "rb").read()
+  sp_model = tf.io.gfile.GFile(vocab_filename, "rb").read()
   tokenizer = tf_text.SentencepieceTokenizer(model=sp_model)
   batch_size = text.shape[0]
   if encoder_type == "sentencepiece_newline":
@@ -44,10 +44,10 @@ def encode(text: tf.Tensor, max_len: int, vocab_filename: str,
   ids = tf.concat([ids, eos], axis=1)
   ids = ids.to_tensor(default_value=0)
   ids = ids[:, :max_len]
-  pad = max_len - tf.shape(ids)[1]
-  ids = tf.pad(ids, [[0, 0], [0, pad]])
+  pad = max_len - tf.shape(input=ids)[1]
+  ids = tf.pad(tensor=ids, paddings=[[0, 0], [0, pad]])
   ids.set_shape([ids.shape[0], max_len])
-  ids = tf.where(ids > 1, ids + _SHIFT_RESERVED_TOKENS, ids)
+  ids = tf.compat.v1.where(ids > 1, ids + _SHIFT_RESERVED_TOKENS, ids)
   ids = tf.cast(ids, tf.int64)
   return ids
 
@@ -56,9 +56,9 @@ def decode(ids: tf.Tensor, vocab_filename: str, encoder_type: str):
   """DecodeOp."""
   if encoder_type not in ["sentencepiece", "sentencepiece_newline"]:
     raise ValueError("Unsupported encoder type: %s" % encoder_type)
-  sp_model = tf.gfile.GFile(vocab_filename, "rb").read()
+  sp_model = tf.io.gfile.GFile(vocab_filename, "rb").read()
   tokenizer = tf_text.SentencepieceTokenizer(model=sp_model)
-  ids = tf.where(ids > 1 + _SHIFT_RESERVED_TOKENS, ids - _SHIFT_RESERVED_TOKENS,
+  ids = tf.compat.v1.where(ids > 1 + _SHIFT_RESERVED_TOKENS, ids - _SHIFT_RESERVED_TOKENS,
                  ids)
   ids = tf.cast(ids, tf.int32)
   text = tokenizer.detokenize(ids)
@@ -90,7 +90,7 @@ class SentencePieceEncoder(object):
                shift_reserved_tokens: int = _SHIFT_RESERVED_TOKENS,
                newline_symbol: str = ""):
     self._tokenizer = sentencepiece_processor.SentencePieceProcessor()
-    self._sp_model = tf.gfile.GFile(sentencepiece_model_file, "rb").read()
+    self._sp_model = tf.io.gfile.GFile(sentencepiece_model_file, "rb").read()
     self._tokenizer.LoadFromSerializedProto(self._sp_model)
     self._shift_reserved_tokens = shift_reserved_tokens
     self._newline_symbol = newline_symbol

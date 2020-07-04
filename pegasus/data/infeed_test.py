@@ -45,5 +45,5 @@ class InfeedTest(tf.test.TestCase, parameterized.TestCase):
 
 
 if __name__ == "__main__":
-  tf.enable_eager_execution()
+  tf.compat.v1.enable_eager_execution()
   absltest.main()

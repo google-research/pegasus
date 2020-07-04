@@ -37,7 +37,7 @@ class DecodingTest(tf.test.TestCase, parameterized.TestCase):
     self.assertAllEqual([[flt_min, flt_min, 3, 4, 5]], logits)
 
   def test_top_p(self):
-    logits = tf.log(
+    logits = tf.math.log(
         tf.constant([[0.01, 0.02, 0.3, 0.07, 0.6]], dtype=tf.float32))
     flt_min = tf.float32.min
     logits_1 = decoding.process_logits(logits, top_p=0.8)
@@ -60,7 +60,7 @@ class DecodingTest(tf.test.TestCase, parameterized.TestCase):
     def symbols_to_logits_fn(unused_decodes, unused_context, unused_i):
       return tf.constant([[1, 2, 3, 4], [1, 2, 3, 4]], tf.float32) * 3
 
-    tf.set_random_seed(0)
+    tf.compat.v1.set_random_seed(0)
     decodes = decoding.left2right_decode(
         symbols_to_logits_fn, {},
         batch_size,
@@ -89,7 +89,7 @@ class DecodingTest(tf.test.TestCase, parameterized.TestCase):
               [decodes.shape[0], 1]), i + 2)
       return tf.cast(logits, tf.float32)
 
-    tf.set_random_seed(0)
+    tf.compat.v1.set_random_seed(0)
     decodes = decoding.left2right_decode(
         symbols_to_logits_fn,
         context,
@@ -104,5 +104,5 @@ class DecodingTest(tf.test.TestCase, parameterized.TestCase):
 
 
 if __name__ == "__main__":
-  tf.enable_eager_execution()
+  tf.compat.v1.enable_eager_execution()
   absltest.main()

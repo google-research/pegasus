@@ -91,4 +91,4 @@ def main(_):
 
 if __name__ == "__main__":
   flags.mark_flags_as_required(["params", "model_dir"])
-  tf.app.run(main)
+  tf.compat.v1.app.run(main)

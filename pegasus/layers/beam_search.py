@@ -110,7 +110,7 @@ def beam_search(symbols_to_logits_fn,
 
     # select top 2 * beam_size and fill alive and finished.
     log_probs_BxMxV = logits_BxMxV - tf.reduce_logsumexp(
-        logits_BxMxV, axis=2, keepdims=True)
+        input_tensor=logits_BxMxV, axis=2, keepdims=True)
     log_probs_BxMxV += tf.expand_dims(alive_log_probs_BxM, axis=2)
     log_probs_BxMV = tf.reshape(log_probs_BxMxV, [B, -1])
     new_log_probs_Bx2M, topk_indices_Bx2M = tf.nn.top_k(log_probs_BxMV, k=2 * M)
@@ -120,7 +120,7 @@ def beam_search(symbols_to_logits_fn,
     topk_ids_Bx2M = topk_indices_Bx2M % V
     new_seq_Bx2MxT = _update_i(topk_seq_Bx2MxT, topk_ids_Bx2M, i)
     new_finished_flags_Bx2M = tf.cast(
-        tf.reduce_any(tf.equal(new_seq_Bx2MxT, eos_id), axis=-1), dtype)
+        tf.reduce_any(input_tensor=tf.equal(new_seq_Bx2MxT, eos_id), axis=-1), dtype)
 
     # get new alive
     _, topk_alive_indices_BxM = tf.nn.top_k(
@@ -152,14 +152,14 @@ def beam_search(symbols_to_logits_fn,
   init_alive_log_probs_BxM = tf.tile(log_probs_1xM, [B, 1])
   init_alive_cache_BxMxU = tf.nest.map_structure(
       lambda t: _expand_to_beam_size(t, M), initial_cache_BxU)
-  init_finished_seq_BxMxT = tf.zeros(tf.shape(init_alive_seq_BxMxT), int_dtype)
+  init_finished_seq_BxMxT = tf.zeros(tf.shape(input=init_alive_seq_BxMxT), int_dtype)
   init_finished_scores_BxM = tf.zeros([B, M], dtype=dtype) + dtype.min
 
   # run loop.
   (_, final_alive_seq_BxMxT, final_alive_scores_BxM, _,
    final_finished_seq_BxMxT, final_finished_scores_BxM) = tf.while_loop(
-       lambda *args: True,  # Always do T iterations
-       _loop_body,
+       cond=lambda *args: True,  # Always do T iterations
+       body=_loop_body,
        loop_vars=[
            init_i, init_alive_seq_BxMxT, init_alive_log_probs_BxM,
            init_alive_cache_BxMxU, init_finished_seq_BxMxT,
@@ -172,11 +172,11 @@ def beam_search(symbols_to_logits_fn,
 
   # process finished.
   final_finished_flag_BxMx1 = tf.reduce_any(
-      tf.equal(final_finished_seq_BxMxT, eos_id), axis=-1, keepdims=True)
-  final_seq_BxMxT = tf.where(
+      input_tensor=tf.equal(final_finished_seq_BxMxT, eos_id), axis=-1, keepdims=True)
+  final_seq_BxMxT = tf.compat.v1.where(
       tf.tile(final_finished_flag_BxMx1, [1, 1, T]), final_finished_seq_BxMxT,
       final_alive_seq_BxMxT)
-  final_scores_BxM = tf.where(
+  final_scores_BxM = tf.compat.v1.where(
       tf.squeeze(final_finished_flag_BxMx1, axis=-1), final_finished_scores_BxM,
       final_alive_scores_BxM)
   return final_seq_BxMxT, final_scores_BxM

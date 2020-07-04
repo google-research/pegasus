@@ -53,7 +53,7 @@ def process_logits(logits_BxN, top_k=0, top_p=0.0, temperature=0.0):
 
   if top_k > 0:
     top_values_BxK, _ = tf.math.top_k(logits_BxN, k=top_k, sorted=False)
-    min_value_Bx1 = tf.reduce_min(top_values_BxK, axis=-1, keepdims=True)
+    min_value_Bx1 = tf.reduce_min(input_tensor=top_values_BxK, axis=-1, keepdims=True)
     mask_BxN = tf.cast(tf.less(logits_BxN, min_value_Bx1), logits_BxN.dtype)
     logits_BxN -= mask_BxN * logits_BxN.dtype.max
 
@@ -74,9 +74,9 @@ def process_logits(logits_BxN, top_k=0, top_p=0.0, temperature=0.0):
     logits_BxN -= top_p_mask_BxN * logits_BxN.dtype.max
 
   if temperature > 0:
-    logits_shape = tf.shape(logits_BxN)
-    uniform_noise_BxN = tf.random_uniform(logits_shape)
-    logits_BxN += -tf.log(-tf.log(uniform_noise_BxN)) * temperature
+    logits_shape = tf.shape(input=logits_BxN)
+    uniform_noise_BxN = tf.random.uniform(logits_shape)
+    logits_BxN += -tf.math.log(-tf.math.log(uniform_noise_BxN)) * temperature
   return logits_BxN
 
 
@@ -142,18 +142,18 @@ def left2right_decode(symbols_to_logits_fn,
     def decode_loop(i, decodes_BxT, cache_BxU_dict):
       logits_BxV = symbols_to_logits_fn(decodes_BxT, cache_BxU_dict, i)
       logits_BxV = process_logits(logits_BxV, top_k, top_p, temperature)
-      decodes_BxT = inplace_update_i(decodes_BxT, tf.argmax(logits_BxV, -1), i)
+      decodes_BxT = inplace_update_i(decodes_BxT, tf.argmax(input=logits_BxV, axis=-1), i)
       return i + 1, decodes_BxT, cache_BxU_dict
 
     def loop_cond(i, decodes_BxT, unused_cache_BxU_dict):
-      finished_B = tf.reduce_any(tf.equal(decodes_BxT, EOS_ID), axis=1)
+      finished_B = tf.reduce_any(input_tensor=tf.equal(decodes_BxT, EOS_ID), axis=1)
       return tf.logical_and(i < max_decode_len,
-                            tf.logical_not(tf.reduce_all(finished_B)))
+                            tf.logical_not(tf.reduce_all(input_tensor=finished_B)))
 
     init_dec_BxT = tf.zeros([batch_size, max_decode_len], dtype=dtype)
     _, decodes, _ = tf.while_loop(
-        loop_cond, decode_loop,
-        [tf.constant(0, dtype=dtype), init_dec_BxT, context_BxU_dict])
+        cond=loop_cond, body=decode_loop,
+        loop_vars=[tf.constant(0, dtype=dtype), init_dec_BxT, context_BxU_dict])
     return decodes
 
   else:

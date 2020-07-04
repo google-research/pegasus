@@ -27,7 +27,7 @@ import tensorflow as tf
 def split_heads(tensor_BxIxD, num_heads):
   B, I, D = tensor_BxIxD.shape
   tensor_BxIxHxD = tf.reshape(tensor_BxIxD, [B, I, num_heads, D // num_heads])
-  tensor_BxHxIxD = tf.transpose(tensor_BxIxHxD, [0, 2, 1, 3])
+  tensor_BxHxIxD = tf.transpose(a=tensor_BxIxHxD, perm=[0, 2, 1, 3])
   return tensor_BxHxIxD
 
 
@@ -38,10 +38,10 @@ class Attention(object):
     if hidden_size % num_heads != 0:
       raise ValueError("Number of attention heads must divide hidden size")
 
-    self._q_layer = tf.layers.Dense(hidden_size, use_bias=False, name="q_proj")
-    self._k_layer = tf.layers.Dense(hidden_size, use_bias=False, name="k_proj")
-    self._v_layer = tf.layers.Dense(hidden_size, use_bias=False, name="v_proj")
-    self._output_layer = tf.layers.Dense(
+    self._q_layer = tf.compat.v1.layers.Dense(hidden_size, use_bias=False, name="q_proj")
+    self._k_layer = tf.compat.v1.layers.Dense(hidden_size, use_bias=False, name="k_proj")
+    self._v_layer = tf.compat.v1.layers.Dense(hidden_size, use_bias=False, name="v_proj")
+    self._output_layer = tf.compat.v1.layers.Dense(
         hidden_size, use_bias=False, name="output_proj")
     self._num_heads = num_heads
     self._hidden_size = hidden_size
@@ -81,7 +81,7 @@ class Attention(object):
           alignment_BxHxIxM, self._attention_dropout, noise_shape=[1, 1, I, M])
     outputs_BxHxIxDh = tf.matmul(alignment_BxHxIxM, v_BxHxMxDh)
     outputs_BxIxD = tf.reshape(
-        tf.transpose(outputs_BxHxIxDh, [0, 2, 1, 3]), [B, I, D])
+        tf.transpose(a=outputs_BxHxIxDh, perm=[0, 2, 1, 3]), [B, I, D])
     outputs_BxIxD = self._output_layer(outputs_BxIxD)
     return outputs_BxIxD
 
@@ -103,7 +103,7 @@ def ids_to_bias(ids_BxI, dtype=tf.float32, padding_id=0):
 
 def upper_triangle_bias(D, dtype=tf.float32):
   """Create a upper triangle matrix for decoding bias."""
-  upper_triangle_DxD = 1 - tf.matrix_band_part(
+  upper_triangle_DxD = 1 - tf.linalg.band_part(
       tf.ones([D, D], dtype=dtype), -1, 0)
   tensor_1xDxD = tf.expand_dims(upper_triangle_DxD * dtype.min, axis=0)
   return tensor_1xDxD

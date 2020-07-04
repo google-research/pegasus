@@ -30,16 +30,16 @@ def _create_generative_metrics(labels, weights, logits):
   Returns:
     dictionary of tensor metrics.
   """
-  predictions = tf.argmax(logits, -1)
-  accuracy_unmasked = tf.metrics.accuracy(
+  predictions = tf.argmax(input=logits, axis=-1)
+  accuracy_unmasked = tf.compat.v1.metrics.accuracy(
       labels=labels, predictions=predictions)
-  accuracy_pad_masked = tf.metrics.accuracy(
+  accuracy_pad_masked = tf.compat.v1.metrics.accuracy(
       labels=labels, predictions=predictions, weights=weights)
-  loss = tf.losses.sparse_softmax_cross_entropy(labels, logits, weights=weights)
+  loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(labels, logits, weights=weights)
   metrics = {
       "metrics/accuracy_unmasked": accuracy_unmasked,
       "metrics/accuracy_pad_masked": accuracy_pad_masked,
-      "metrics/perplexity_pad_masked": tf.metrics.mean(loss),
+      "metrics/perplexity_pad_masked": tf.compat.v1.metrics.mean(loss),
   }
   return metrics
 

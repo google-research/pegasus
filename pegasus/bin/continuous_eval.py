@@ -51,10 +51,10 @@ def main(_):
                                                FLAGS.iterations_per_loop,
                                                FLAGS.num_shards, params)
 
-  for _ in contrib_training.checkpoints_iterator(
+  for _ in tf.train.checkpoints_iterator(
       FLAGS.model_dir, min_interval_secs=60):
     global_step = estimator.get_variable_value("global_step")
-    tf.logging.info("Evaluating at global step %d", global_step)
+    tf.compat.v1.logging.info("Evaluating at global step %d", global_step)
 
     input_fn = infeed.get_input_fn(params.parser, params.dev_pattern,
                                    tf.estimator.ModeKeys.PREDICT)
@@ -109,5 +109,5 @@ def main(_):
 
 if __name__ == "__main__":
   flags.mark_flags_as_required(["params", "model_dir"])
-  tf.enable_eager_execution()
-  tf.app.run(main)
+  tf.compat.v1.enable_eager_execution()
+  tf.compat.v1.app.run(main)

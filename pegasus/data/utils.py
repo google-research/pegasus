@@ -45,7 +45,7 @@ def filter_by_length(tensor_list, min_len_list=None, max_len_list=None):
     if min_len and max_len and min_len >= max_len:
       raise ValueError("Invalid min max lengths.")
     if any([min_len, max_len]):
-      tensor_len = tf.reduce_sum(tf.cast(tf.greater(tensor, 0), tf.int32))
+      tensor_len = tf.reduce_sum(input_tensor=tf.cast(tf.greater(tensor, 0), tf.int32))
       if min_len:
         keep = tf.logical_and(keep, tf.greater(tensor_len, min_len))
       if max_len:
@@ -56,7 +56,7 @@ def filter_by_length(tensor_list, min_len_list=None, max_len_list=None):
     empty_tensor = tf.zeros(
         [0] * len(tensor.shape.as_list()), dtype=tensor.dtype)
     filtered_tensor_list.append(
-        tf.cond(keep, lambda: tensor, lambda: empty_tensor))  # pylint: disable=cell-var-from-loop
+        tf.cond(pred=keep, true_fn=lambda: tensor, false_fn=lambda: empty_tensor))  # pylint: disable=cell-var-from-loop
   return filtered_tensor_list
 
 
@@ -65,7 +65,7 @@ def add_length_bucket_id(inputs_BxI, targets_BxT, bucket_size, bucket_start_id,
   """Add bucket id of the target to start of the inputs."""
   if bucket_size:
     non_pad_BxL = tf.cast(tf.greater(targets_BxT, 0), targets_BxT.dtype)
-    length_Bx1 = tf.reduce_sum(non_pad_BxL, axis=-1, keep_dims=True)
+    length_Bx1 = tf.reduce_sum(input_tensor=non_pad_BxL, axis=-1, keepdims=True)
     bucket_id_Bx1 = length_Bx1 // bucket_size + bucket_start_id
     # tail distributions are assigned to the last bucket.
     bucket_id_Bx1 = tf.minimum(bucket_id_Bx1, max_num_buckets)

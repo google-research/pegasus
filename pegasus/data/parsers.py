@@ -176,12 +176,12 @@ def string_features_for_pretraining_parser(
         tf.reshape(input_dic["targets"], [1]), max_target_len, vocab_filename,
         encoder_type)
 
-    inputs = tf.cond(supervised, lambda: supervised_inputs,
-                     lambda: pretrain_inputs)
-    targets = tf.cond(supervised, lambda: supervised_targets,
-                      lambda: pretrain_targets)
-    masked_inputs = tf.cond(supervised, lambda: supervised_inputs,
-                            lambda: pretrain_masked_inputs)
+    inputs = tf.cond(pred=supervised, true_fn=lambda: supervised_inputs,
+                     false_fn=lambda: pretrain_inputs)
+    targets = tf.cond(pred=supervised, true_fn=lambda: supervised_targets,
+                      false_fn=lambda: pretrain_targets)
+    masked_inputs = tf.cond(pred=supervised, true_fn=lambda: supervised_inputs,
+                            false_fn=lambda: pretrain_masked_inputs)
 
     inputs, targets, masked_inputs = utils.filter_by_length(
         [inputs, targets, masked_inputs],

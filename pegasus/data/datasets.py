@@ -82,7 +82,7 @@ class FilesDataset(BaseDataset):
     """Parse serialized examples."""
     if self.is_supervised:
       features = tf.io.parse_single_example(
-          serialized_example,
+          serialized=serialized_example,
           features={
               "inputs": tf.io.FixedLenFeature([], tf.string),
               "targets": tf.io.FixedLenFeature([], tf.string),
@@ -94,7 +94,7 @@ class FilesDataset(BaseDataset):
       }
     else:
       features = tf.io.parse_single_example(
-          serialized_example,
+          serialized=serialized_example,
           features={
               "text": tf.io.FixedLenFeature([], tf.string),
           })
@@ -114,7 +114,7 @@ class FilesDataset(BaseDataset):
     Returns:
       Tuple of (tf.data.Dataset, number_of_examples)
     """
-    filenames = sorted(tf.gfile.Glob(input_pattern))
+    filenames = sorted(tf.io.gfile.glob(input_pattern))
     if not filenames:
       raise ValueError("Can't not find files with pattern: %s." % input_pattern)
     dataset = tf.data.Dataset.from_tensor_slices(filenames)
