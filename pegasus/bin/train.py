@@ -56,42 +56,53 @@ flags.DEFINE_integer("tfds_train_examples", -1,
 def main(_):
   params = registry.get_params(FLAGS.params)(FLAGS.param_overrides)
   if FLAGS.tfds_train_examples > 0:
+    # Here the parameters expect the train pattern to be a tfds dataset
     if not params.train_pattern.startswith("tfds:"):
       raise ValueError("expect tfds type dataset.")
+    # Adds the number of examples we want to train the model with (e.g. tfds:cnn_dailymail/plain-text-train-take_1000)
+    # If training with ALL, by default the tfds_train_examples is -1 (e.g. tfds:cnn_dailymail/plain-text-train-take_-1)
     params.train_pattern += "-take_%d" % FLAGS.tfds_train_examples
 
   logging.warning("Flag 1: Creating Estimator")
   estimator = estimator_utils.create_estimator(
-      FLAGS.master,
-      FLAGS.model_dir,
-      FLAGS.use_tpu,
-      FLAGS.iterations_per_loop,
-      FLAGS.num_shards,
-      params,
-      train_init_checkpoint=FLAGS.train_init_checkpoint,
-      train_warmup_steps=FLAGS.train_warmup_steps,
-      save_checkpoints_steps=FLAGS.save_checkpoints_steps,
-      keep_checkpoint_max=FLAGS.keep_checkpoint_max)
+      FLAGS.master,  # local tensorflow server
+      FLAGS.model_dir,  # directory pointing to model checkpoints (e.g.ckpt/pegasus_ckpt/cnn_dailymail)
+      FLAGS.use_tpu,  # false by default
+      FLAGS.iterations_per_loop,  # 1000 by default
+      FLAGS.num_shards,  # 1 by default
+      params,  # should be the name of the model we want (defined above - e.g. cnn_dailymail_transformer)
+      train_init_checkpoint=FLAGS.train_init_checkpoint,  # the pre-trained model checkpoint (e.g. ckpt/pegasus_ckpt/model.ckpt-1500000)
+      train_warmup_steps=FLAGS.train_warmup_steps,  # number of steps to warm up, 10000 by default
+      save_checkpoints_steps=FLAGS.save_checkpoints_steps,  # number of steps to save ckpt, 1000 by default
+      keep_checkpoint_max=FLAGS.keep_checkpoint_max)  # number of recent ckpt to keep (older deleted), 5 by default
 
   # Split training into sesions, walkaround yaqs/5313417304080384
   # Tensorflow estimator doesn't respect save_checkpoints_steps when running in
   # distributed environment
+  # A list of integers that overrides the train steps from params, ensures the model is saved at specific
+  # train steps - is not defined by default
   if FLAGS.train_steps_overrides:
     train_steps_list = [
         int(s) for s in FLAGS.train_steps_overrides.split(",") if int(s) > 0
     ]
+
+  # Otherwise is defined from train_steps in params - this is defined depending on the dataset
+  # e.g. cnn_dailymail has 210000 train_steps (defined in pegasus/public_params.py
   else:
-    train_steps_list = [params.train_steps]
+    train_steps_list = [params.train_steps]  # e.g. this will be 21000 for CNN/DM
 
   logging.warning("Flag 2: Training the Estimator")
   for train_steps in train_steps_list:
+    # Train the model once for the number of steps defined above
+    # Within this training step, the model will run through the training loop and save model checkpoints
+    # Need to identify where the model makes
     estimator.train(
         input_fn=infeed.get_input_fn(
-            params.parser,
-            params.train_pattern,
-            tf.estimator.ModeKeys.TRAIN,
-            parallelism=FLAGS.train_infeed_parallelism),
-        max_steps=train_steps)
+            params.parser,  # defined initially as None, but changed to something (line 82-92)
+            params.train_pattern, # e.g. tfds:cnn_dailymail/plain-text-train-take_-1 (ALL) or tfds:cnn_dailymail/plain-text-train-take_1000
+            tf.estimator.ModeKeys.TRAIN,  # set to train
+            parallelism=FLAGS.train_infeed_parallelism),  # defined somewhere? set to 32 by default
+        max_steps=train_steps)  # the number of steps defined above
 
 
 if __name__ == "__main__":

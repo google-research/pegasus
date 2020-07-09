@@ -29,38 +29,48 @@ from tensorflow.contrib.tpu.python.tpu import tpu_estimator
 from tensorflow.contrib.tpu.python.tpu import tpu_optimizer
 
 
-def create_estimator(master,
-                     model_dir,
-                     use_tpu,
-                     iterations_per_loop,
-                     num_shards,
-                     model_params,
+def create_estimator(master,  # local tensorflow server
+                     model_dir,  # directory pointing to model checkpoints (e.g.ckpt/pegasus_ckpt/cnn_dailymail)
+                     use_tpu,  # false by default
+                     iterations_per_loop,  # 1000 by default
+                     num_shards,  # 1 by default
+                     model_params,  # should be the name of the model we want (defined above - e.g. cnn_dailymail_transformer)
                      include_features_in_predictions=True,
                      decode_keys=(),
-                     train_init_checkpoint=None,
-                     train_warmup_steps=10000,
-                     save_checkpoints_steps=1000,
-                     keep_checkpoint_max=5):
+                     train_init_checkpoint=None,   # the pre-trained model checkpoint (e.g. ckpt/pegasus_ckpt/model.ckpt-1500000)
+                     train_warmup_steps=10000,  # number of steps to warm up, 10000 by default
+                     save_checkpoints_steps=1000,  # number of steps to save ckpt, 1000 by default
+                     keep_checkpoint_max=5):  # number of recent ckpt to keep (older deleted), 5 by default
   """Returns an tensorflow estimator."""
 
+  # This is the runtime config for tensorflow estimators
   run_config = tpu_config.RunConfig(
-      master=master,
-      model_dir=model_dir,
+      master=master,  # local tensorflow server
+      model_dir=model_dir,  # directory pointing to model checkpoints (e.g.ckpt/pegasus_ckpt/cnn_dailymail)
       session_config=tf.ConfigProto(
-          allow_soft_placement=True, log_device_placement=False),
-      tpu_config=tpu_config.TPUConfig(iterations_per_loop),
-      save_checkpoints_steps=save_checkpoints_steps,
-      keep_checkpoint_max=keep_checkpoint_max)
+          allow_soft_placement=True, log_device_placement=False),  # some session config???
+      tpu_config=tpu_config.TPUConfig(iterations_per_loop),  # another estimator config - set to 1000
+      save_checkpoints_steps=save_checkpoints_steps,  # number of steps to save ckpt, 1000 by default
+      keep_checkpoint_max=keep_checkpoint_max)  # number of recent ckpt to keep (older deleted), 5 by default
 
+  # It will return the tensorflow estimator created as we would want it to be
   return tpu_estimator.TPUEstimator(
+      # This is to instantiate the estimator model function with the following params:
+      # use_tpu = False
+      # model_params = name of model (e.g. cnn_dailymail_transformer) - points to pegasus/public_params.py
+      # model_dir = directory pointing to model checkpoints (e.g.ckpt/pegasus_ckpt/cnn_dailymail)
+      # include_features_preds = True
+      # decode_keys = ()
+      # train_init_checkpoint = ckpt/pegasus_ckpt/model.ckpt-1500000
+      # train_warmup_steps = 10000
       model_fn=_estimator_model_fn(use_tpu, model_params, model_dir,
                                    include_features_in_predictions, decode_keys,
                                    train_init_checkpoint, train_warmup_steps),
-      use_tpu=use_tpu,
-      train_batch_size=model_params.batch_size * num_shards,
-      eval_batch_size=model_params.batch_size * num_shards,
-      predict_batch_size=model_params.batch_size * num_shards,
-      config=run_config)
+      use_tpu=use_tpu,  # false
+      train_batch_size=model_params.batch_size * num_shards,  # batch_size * 1 by default
+      eval_batch_size=model_params.batch_size * num_shards,  # batch_size * 1 by default
+      predict_batch_size=model_params.batch_size * num_shards,  # batch_size * 1 by default
+      config=run_config)  # the runtime config as defined above
 
 
 def _estimator_model_fn(use_tpu, model_params, model_dir,
@@ -68,9 +78,12 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
                         train_init_checkpoint, train_warmup_steps):
   """Returns an estimator model function."""
 
+  # The model input function points to infeed.get_input_fn() which during training
+  # defines the mode to be TRAIN
   def model_fn(features, labels, mode, config, params):
     """Estimator model function."""
 
+    # Not sure why it does this?
     del labels
     del config
     del params
@@ -79,6 +92,7 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
         tf.variance_scaling_initializer(
             1.0, mode="fan_avg", distribution="uniform"))
 
+    # PREDICTION (e.g. evaluate)
     if mode == tf.estimator.ModeKeys.PREDICT:
       predictions = model_params.estimator_prediction_fn(features)
 
@@ -97,11 +111,31 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
         contrib_tpu.outside_compilation(decode_host_call, predictions)
       return tpu_estimator.TPUEstimatorSpec(mode=mode, predictions=predictions)
 
+    # TRAINING
+    # I think that this is where the model will calculate the loss and the outputs
+    # at the END of the training steps? I would think it would do it for the number
+    # of training steps as a for loop?
     training = mode == tf.estimator.ModeKeys.TRAIN
+    # use_tpu is false by default so this skips
     if use_tpu and model_params.use_bfloat16:
       with contrib_tpu.bfloat16_scope():
         loss, outputs = model_params.model()(features, training)
     else:
+      # we run this to get the loss and the outputs HERE - but at the end of the training stepss
+      # model_params should be the name of the model e.g. cnn_dailymail_transformer
+      # FROM pegasus/models/transformer.py
+      # Models contain embedding, encoding, and loss functions, and expect text ids as
+      # inputs. All models have same format as below:
+      #   model = TransformerModel(...)
+      #   loss, output = model(features, training)
+      # Features and outputs are dictionary of tensors. Features usually inlucdes inputs
+      # and targets ids.
+
+      # ALSO FROM pegasus/models/transformer.py
+      # features: dictionary of tensors including "inputs" [batch, input_len] and "targets" [batch, output_len]
+      # training: bool of whether the mode is training.
+      # this will return -> Tuple of (loss, outputs):
+      # Loss is a scalar. Output is a dictionary of tensors, containing model's output logits.
       loss, outputs = model_params.model()(features, training)
 
     # TPU requires ouputs all have batch dimension and doesn't handle scalar.
@@ -125,6 +159,7 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
         optimizer = tpu_optimizer.CrossShardOptimizer(optimizer)
       train_op = optimizer.minimize(loss, global_step=global_step)
 
+      # This is the configured estimator function that is returned to train the model
       return tpu_estimator.TPUEstimatorSpec(
           mode=mode,
           loss=loss,
@@ -132,6 +167,8 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
           scaffold_fn=_load_vars_from_checkpoint(use_tpu,
                                                  train_init_checkpoint),
           host_call=add_scalars_to_summary(model_dir, {"learning_rate": lr}))
+
+    # EVALUATION (evaluating the performance)
     if mode == tf.estimator.ModeKeys.EVAL:
       eval_metrics = model_params.estimator_eval_metrics_fn(features, outputs)
       return tpu_estimator.TPUEstimatorSpec(
