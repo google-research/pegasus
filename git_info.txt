@@ -1,0 +1,6 @@
+# If you want to keep the forked-repo up to date, make sure you run:
+# Check that the upstream repo is added
+git remote add upstream git://github.com/google-research/pegasus.git
+# Pull any changes from original master
+git pull upstream master
+# Now add your changes to forked-repo master
