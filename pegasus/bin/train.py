@@ -19,6 +19,7 @@ from pegasus.params import all_params  # pylint: disable=unused-import
 from pegasus.params import estimator_utils
 from pegasus.params import registry
 import tensorflow as tf
+from absl import logging
 
 flags = tf.flags
 FLAGS = flags.FLAGS
@@ -58,6 +59,8 @@ def main(_):
     if not params.train_pattern.startswith("tfds:"):
       raise ValueError("expect tfds type dataset.")
     params.train_pattern += "-take_%d" % FLAGS.tfds_train_examples
+
+  logging.warning("Flag 1: Creating Estimator")
   estimator = estimator_utils.create_estimator(
       FLAGS.master,
       FLAGS.model_dir,
@@ -79,6 +82,8 @@ def main(_):
     ]
   else:
     train_steps_list = [params.train_steps]
+
+  logging.warning("Flag 2: Training the Estimator")
   for train_steps in train_steps_list:
     estimator.train(
         input_fn=infeed.get_input_fn(
