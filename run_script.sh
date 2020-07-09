@@ -20,3 +20,4 @@ python3 pegasus/bin/train.py --params=aeslc_transformer \
 
 # Should be able to modify this by including
 # train_pattern=tfds:wikihow/all-train-take_1000 \
+# Refer to pegasus/datasets.py and pegasus/public_params.py
