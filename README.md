@@ -101,6 +101,8 @@ python3 pegasus/bin/train.py --params=aeslc_transformer \
 --model_dir=ckpt/pegasus_ckpt/aeslc
 ```
 
+If you would like to finetune on a subset of dataset, please refer to the [example of input pattern](https://github.com/google-research/pegasus/blob/master/pegasus/data/datasets.py#L186).
+
 Evaluate on the finetuned dataset.
 
 ```
