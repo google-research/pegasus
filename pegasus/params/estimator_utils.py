@@ -157,6 +157,9 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
           beta1=0.0)
       if use_tpu:
         optimizer = tpu_optimizer.CrossShardOptimizer(optimizer)
+
+      # minimising the loss through max likelihood obj here?
+      # plan would be to combine this loss with an 'RL' loss (incorporating ROUGE)
       train_op = optimizer.minimize(loss, global_step=global_step)
 
       # This is the configured estimator function that is returned to train the model
