@@ -105,11 +105,33 @@ class TransformerEncoderDecoderModel(base.BaseModel):
       states_BxTxD = contrib_layers.layer_norm(states_BxTxD, begin_norm_axis=2)
     logits_BxTxV = self._embedding_layer(states_BxTxD, False)
     targets_mask_BxT = tf.cast(tf.greater(targets_BxT, 0), self._dtype)
+
+    # Add here to understand loss output
+    print("Targets_BxT: {}".format(targets_BxT))
+    print("Shape of Targets_BxT: {}".format(tf.shape(targets_BxT)))
+    print("Shape of Targets_BxT: {}".format(tf.shape(targets_BxT).numpy()))
+    print()
+    print("One hot labels: {}".format(tf.one_hot(targets_BxT, self._vocab_size)))
+    print()
+    print("Logits_BxTxV: {}".format(logits_BxTxV))
+    print("Shape of Logits_BxTxV: {}".format(tf.shape(logits_BxTxV)))
+    print("Shape of Logits_BxTxV: {}".format(tf.shape(logits_BxTxV).numpy()))
+    print()
+    print("Targets_mask_BxT: {}".format(targets_mask_BxT))
+    print()
+    print("Are the shape of one_hot_labels and logits the same? {}".format(
+        tf.shape(tf.one_hot(targets_BxT, self._vocab_size) == tf.shape(logits_BxTxV)))
+    )
+
     loss = tf.losses.softmax_cross_entropy(
         tf.one_hot(targets_BxT, self._vocab_size),
         logits_BxTxV,
         label_smoothing=self._label_smoothing,
         weights=targets_mask_BxT)
+
+    # Prints the loss
+    print("Loss: ".format(loss))
+
     return loss, {"logits": logits_BxTxV}
 
   def predict(self, features, max_decode_len, beam_size, **beam_kwargs):
