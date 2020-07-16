@@ -129,6 +129,7 @@ class TransformerEncoderDecoderModel(base.BaseModel):
         weights=targets_mask_BxT)
 
     # Prints the loss
+    tf.print(loss)
     print("Loss: {}".format(loss))
 
     return loss, {"logits": logits_BxTxV}
