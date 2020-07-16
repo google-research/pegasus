@@ -78,9 +78,9 @@ export PYTHONPATH=.
 pip3 install -r requirements.txt
 ```
 
-Follow the instruction and install [gsutil](https://cloud.google.com/storage/docs/gsutil_install).
+Download vocab, pretrained and fine-tuned checkpoints of all experiments from [Google Cloud](https://console.cloud.google.com/storage/browser/pegasus_ckpt).
 
-Download vocab, pretrained and fine-tuned checkpoints of all experiments.
+Alternatively in terminal, follow the instruction and install [gsutil](https://cloud.google.com/storage/docs/gsutil_install). Then
 
 ```
 mkdir ckpt
