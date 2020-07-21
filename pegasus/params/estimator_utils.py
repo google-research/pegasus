@@ -146,6 +146,16 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
     # TPU requires ouputs all have batch dimension and doesn't handle scalar.
     # Tile all scalars to 1 dimension vector.
     outputs = _tile_scalar_to_batch_size(outputs, model_params.batch_size)
+    logging.info("*** LOSS: {} ***".format(loss))
+    # logging.info("*** LOSS: {} ***".format(tf.make_ndarray(loss)))
+    logging.info("*** OUTPUTS: {} ***".format(outputs))
+    logging.info("*** OUTPUTS: {} ***".format(tf.make_ndarray(outputs)))
+    logging.info("*** TARGETS: {} ***".format(targets))
+    logging.info("*** TARGETS: {} ***".format(tf.make_ndarray(targets)))
+    logging.info("*** TARGETS_MASK: {} ***".format(targets_mask))
+    logging.info("*** TARGETS_MASK: {} ***".format(tf.make_ndarray(targets_mask)))
+    logging.info("*** ONE_HOT: {} ***".format(one_hot))
+    logging.info("*** ONE_HOT: {} ***".format(tf.make_ndarray(one_hot)))
 
     if mode == tf.estimator.ModeKeys.TRAIN:
       init_lr = model_params.learning_rate
