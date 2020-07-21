@@ -136,7 +136,12 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
       # training: bool of whether the mode is training.
       # this will return -> Tuple of (loss, outputs):
       # Loss is a scalar. Output is a dictionary of tensors, containing model's output logits.
-      loss, outputs = model_params.model()(features, training)
+      # loss, outputs = model_params.model()(features, training)
+      loss, outputs, targets, targets_mask, one_hot = model_params.model()(features, training)
+      logging.set_verbosity(logging.INFO)
+      logging_hook = tf.train.LoggingTensorHook({"loss": loss, "logits": outputs, "targets": targets,
+                                                 "targets_mask": targets_mask, "one_hot": one_hot}, every_n_iter=100)
+      # logging.info("***{}***".format({"loss": loss, "outputs": outputs}))
 
     # TPU requires ouputs all have batch dimension and doesn't handle scalar.
     # Tile all scalars to 1 dimension vector.
@@ -169,7 +174,8 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
           train_op=train_op,
           scaffold_fn=_load_vars_from_checkpoint(use_tpu,
                                                  train_init_checkpoint),
-          host_call=add_scalars_to_summary(model_dir, {"learning_rate": lr}))
+          host_call=add_scalars_to_summary(model_dir, {"learning_rate": lr}),
+          training_hooks=[logging_hook])
 
     # EVALUATION (evaluating the performance)
     if mode == tf.estimator.ModeKeys.EVAL:

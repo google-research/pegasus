@@ -129,7 +129,8 @@ class TransformerEncoderDecoderModel(base.BaseModel):
     logging.info("***Loss: {}***".format(loss))
     # logging.info("***Loss: {}***".format(loss.eval()))
 
-    return loss, {"logits": logits_BxTxV}
+    return loss, {"logits": logits_BxTxV}, {"targets": targets_BxT}, {"target_mask": targets_mask_BxT}, \
+           {"one_hot_labels": tf.one_hot(targets_BxT, self._vocab_size)}
 
   def predict(self, features, max_decode_len, beam_size, **beam_kwargs):
     """Predict."""
