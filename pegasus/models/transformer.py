@@ -33,6 +33,7 @@ from pegasus.layers import transformer_block
 from pegasus.models import base
 import tensorflow as tf
 from tensorflow.contrib import layers as contrib_layers
+from absl import logging
 
 
 class TransformerEncoderDecoderModel(base.BaseModel):
@@ -107,20 +108,14 @@ class TransformerEncoderDecoderModel(base.BaseModel):
     targets_mask_BxT = tf.cast(tf.greater(targets_BxT, 0), self._dtype)
 
     # Add here to understand loss output
-    print("Targets_BxT: {}".format(targets_BxT))
-    print("Shape of Targets_BxT: {}".format(tf.shape(targets_BxT)))
-    print()
-    print("One hot labels: {}".format(tf.one_hot(targets_BxT, self._vocab_size)))
-    print()
-    print("Logits_BxTxV: {}".format(logits_BxTxV))
-    print("Shape of Logits_BxTxV: {}".format(tf.shape(logits_BxTxV)))
-    print()
-    print("Targets_mask_BxT: {}".format(targets_mask_BxT))
-    print("Shape of Targets_mask_BxT: {}".format(tf.shape(targets_mask_BxT)))
-    print()
-    print("Are the shape of one_hot_labels and logits the same? {}".format(
-        tf.shape(tf.one_hot(targets_BxT, self._vocab_size) == tf.shape(logits_BxTxV)))
-    )
+    logging.info("***Targets_BxT: {}***".format(targets_BxT))
+    # logging.info("***Targets_BxT: {}***".format(targets_BxT.eval()))
+    logging.info("***One hot labels: {}***".format(tf.one_hot(targets_BxT, self._vocab_size)))
+    # logging.info("***One hot labels: {}***".format(tf.one_hot(targets_BxT, self._vocab_size).eval()))
+    logging.info("***Logits_BxTxV: {}***".format(logits_BxTxV))
+    # logging.info("***Logits_BxTxV: {}***".format(logits_BxTxV.eval()))
+    logging.info("***Targets_mask_BxT: {}***".format(targets_mask_BxT))
+    # logging.info("***Targets_mask_BxT: {}***".format(targets_mask_BxT.eval()))
 
     loss = tf.losses.softmax_cross_entropy(
         tf.one_hot(targets_BxT, self._vocab_size),
@@ -130,7 +125,9 @@ class TransformerEncoderDecoderModel(base.BaseModel):
 
     # Prints the loss
     tf.print(loss)
-    print("Loss: {}".format(loss))
+    # tf.print(loss.eval())
+    logging.info("***Loss: {}***".format(loss))
+    # logging.info("***Loss: {}***".format(loss.eval()))
 
     return loss, {"logits": logits_BxTxV}
 
