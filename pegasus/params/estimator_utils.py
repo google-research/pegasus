@@ -150,18 +150,35 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
       if use_tpu:
         optimizer = tpu_optimizer.CrossShardOptimizer(optimizer)
 
-      # Try to access the gradient - w.r.t what variables?
+      # Add a new loss to existing loss
+      # For every word in the document (targets), choose an arbitrary label (logit?), and set its
+      # log probability to be added to the existing loss - be sure to return both in the logging
+      # prob = softmax(logits) --> log(prob) + loss = new loss
+
+      # Accessing the gradient of loss
+      # Assume that the optimizer minimises wrt global step -> which goes through this same process
       with tf.GradientTape() as tape:
           gradients = tape.gradient(loss, global_step)
-      train_op = optimizer.apply_gradients(gradients, global_step)
+      train_op = optimizer.apply_gradients(zip(gradients, global_step))
 
       # train_op = optimizer.minimize(loss, global_step=global_step)
 
-      # This is the configured estimator function that is returned to train the model
       tf.logging.set_verbosity(tf.logging.INFO)
       logging_hook = tf.train.LoggingTensorHook({"loss": loss, "logits": outputs["logits"],
                                                  "gradients": gradients, "global_step":
                                                      global_step}, every_n_iter=5)
+
+      # Implement ROUGE
+      # argmax(logits) for every word to get prediction
+      # Take this and one_hot labels to calculate ROUGE
+
+      # Implement REINFORCE loss
+      # For every word in the document, sample the logits
+      # Multiply ROUGE score by this log(probability) of sampled logits
+
+      # Implement RELAX loss
+
+      # This is the configured estimator function that is returned to train the model
       return tpu_estimator.TPUEstimatorSpec(
           mode=mode,
           loss=loss,
