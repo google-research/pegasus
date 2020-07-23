@@ -130,13 +130,9 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
     # Will this add to the logging?
     logging.info("*** LOSS: {} ***".format(loss))
     logging.info("*** LOGITS: {} ***".format(outputs["logits"]))
-    logging.info("*** LOGITS: {} ***".format(tf.make_ndarray(outputs["logits"])))
     logging.info("*** TARGETS: {} ***".format(outputs["targets"]))
-    logging.info("*** TARGETS: {} ***".format(tf.make_ndarray(outputs["targets"])))
-    logging.info("*** TARGETS_MASK: {} ***".format(outputs["targets_mask"]))
-    logging.info("*** TARGETS_MASK: {} ***".format(tf.make_ndarray(outputs["targets_mask"])))
+    logging.info("*** TARGETS_MASK: {} ***".format(outputs["target_mask"]))
     logging.info("*** ONE_HOT: {} ***".format(outputs["one_hot_labels"]))
-    logging.info("*** ONE_HOT: {} ***".format(tf.make_ndarray(outputs["one_hot_labels"])))
 
     if mode == tf.estimator.ModeKeys.TRAIN:
       init_lr = model_params.learning_rate
@@ -165,11 +161,7 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
           train_op=train_op,
           scaffold_fn=_load_vars_from_checkpoint(use_tpu,
                                                  train_init_checkpoint),
-          host_call=add_scalars_to_summary(model_dir, {"learning_rate": lr, "loss": loss,
-                                                       "logits": outputs["logits"], "targets":
-                                                           outputs["targets"], "targets_mask":
-                                                           outputs["targets_mask"], "one_hot":
-                                                           outputs["one_hot_labels"]}))
+          host_call=add_scalars_to_summary(model_dir, {"learning_rate": lr}))
 
     # EVALUATION (evaluating the performance)
     if mode == tf.estimator.ModeKeys.EVAL:
