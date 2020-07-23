@@ -155,10 +155,14 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
       train_op = optimizer.minimize(loss, global_step=global_step)
 
       # This is the configured estimator function that is returned to train the model
+      tf.logging.set_verbosity(tf.logging.INFO)
+      logging_hook = tf.train.LoggingTensorHook({"loss": loss, "logits": outputs["logits"]},
+                                                every_n_iter=1)
       return tpu_estimator.TPUEstimatorSpec(
           mode=mode,
           loss=loss,
           train_op=train_op,
+          training_hooks=[logging_hook],
           scaffold_fn=_load_vars_from_checkpoint(use_tpu,
                                                  train_init_checkpoint),
           host_call=add_scalars_to_summary(model_dir, {"learning_rate": lr}))
