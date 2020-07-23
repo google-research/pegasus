@@ -153,7 +153,7 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
       # Try to access the gradient - w.r.t what variables?
       with tf.GradientTape() as tape:
           gradients = tape.gradient(loss, global_step)
-      train_op = optimizer.apply_gradients(zip(gradients), global_step)
+      train_op = optimizer.apply_gradients(gradients, global_step)
 
       # train_op = optimizer.minimize(loss, global_step=global_step)
 
