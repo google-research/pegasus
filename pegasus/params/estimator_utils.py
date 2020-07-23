@@ -121,41 +121,22 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
       with contrib_tpu.bfloat16_scope():
         loss, outputs = model_params.model()(features, training)
     else:
-      # we run this to get the loss and the outputs HERE - but at the end of the training stepss
-      # model_params should be the name of the model e.g. cnn_dailymail_transformer
-      # FROM pegasus/models/transformer.py
-      # Models contain embedding, encoding, and loss functions, and expect text ids as
-      # inputs. All models have same format as below:
-      #   model = TransformerModel(...)
-      #   loss, output = model(features, training)
-      # Features and outputs are dictionary of tensors. Features usually inlucdes inputs
-      # and targets ids.
+      loss, outputs = model_params.model()(features, training)
 
-      # ALSO FROM pegasus/models/transformer.py
-      # features: dictionary of tensors including "inputs" [batch, input_len] and "targets" [batch, output_len]
-      # training: bool of whether the mode is training.
-      # this will return -> Tuple of (loss, outputs):
-      # Loss is a scalar. Output is a dictionary of tensors, containing model's output logits.
-      # loss, outputs = model_params.model()(features, training)
-      loss, outputs, targets, targets_mask, one_hot = model_params.model()(features, training)
-      logging.set_verbosity(logging.INFO)
-      logging_hook = tf.train.LoggingTensorHook({"loss": loss, "logits": outputs, "targets": targets,
-                                                 "targets_mask": targets_mask, "one_hot": one_hot}, every_n_iter=100)
-      # logging.info("***{}***".format({"loss": loss, "outputs": outputs}))
-
-    # TPU requires ouputs all have batch dimension and doesn't handle scalar.
+    # TPU requires outputs all have batch dimension and doesn't handle scalar.
     # Tile all scalars to 1 dimension vector.
     outputs = _tile_scalar_to_batch_size(outputs, model_params.batch_size)
+
+    # Will this add to the logging?
     logging.info("*** LOSS: {} ***".format(loss))
-    # logging.info("*** LOSS: {} ***".format(tf.make_ndarray(loss)))
-    logging.info("*** OUTPUTS: {} ***".format(outputs))
-    logging.info("*** OUTPUTS: {} ***".format(tf.make_ndarray(outputs)))
-    logging.info("*** TARGETS: {} ***".format(targets))
-    logging.info("*** TARGETS: {} ***".format(tf.make_ndarray(targets)))
-    logging.info("*** TARGETS_MASK: {} ***".format(targets_mask))
-    logging.info("*** TARGETS_MASK: {} ***".format(tf.make_ndarray(targets_mask)))
-    logging.info("*** ONE_HOT: {} ***".format(one_hot))
-    logging.info("*** ONE_HOT: {} ***".format(tf.make_ndarray(one_hot)))
+    logging.info("*** LOGITS: {} ***".format(outputs["logits"]))
+    logging.info("*** LOGITS: {} ***".format(tf.make_ndarray(outputs["logits"])))
+    logging.info("*** TARGETS: {} ***".format(outputs["targets"]))
+    logging.info("*** TARGETS: {} ***".format(tf.make_ndarray(outputs["targets"])))
+    logging.info("*** TARGETS_MASK: {} ***".format(outputs["targets_mask"]))
+    logging.info("*** TARGETS_MASK: {} ***".format(tf.make_ndarray(outputs["targets_mask"])))
+    logging.info("*** ONE_HOT: {} ***".format(outputs["one_hot_labels"]))
+    logging.info("*** ONE_HOT: {} ***".format(tf.make_ndarray(outputs["one_hot_labels"])))
 
     if mode == tf.estimator.ModeKeys.TRAIN:
       init_lr = model_params.learning_rate
@@ -184,8 +165,11 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
           train_op=train_op,
           scaffold_fn=_load_vars_from_checkpoint(use_tpu,
                                                  train_init_checkpoint),
-          host_call=add_scalars_to_summary(model_dir, {"learning_rate": lr}),
-          training_hooks=[logging_hook])
+          host_call=add_scalars_to_summary(model_dir, {"learning_rate": lr, "loss": loss,
+                                                       "logits": outputs["logits"], "targets":
+                                                           outputs["targets"], "targets_mask":
+                                                           outputs["targets_mask"], "one_hot":
+                                                           outputs["one_hot_labels"]}))
 
     # EVALUATION (evaluating the performance)
     if mode == tf.estimator.ModeKeys.EVAL:

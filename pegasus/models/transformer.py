@@ -107,30 +107,14 @@ class TransformerEncoderDecoderModel(base.BaseModel):
     logits_BxTxV = self._embedding_layer(states_BxTxD, False)
     targets_mask_BxT = tf.cast(tf.greater(targets_BxT, 0), self._dtype)
 
-    # Add here to understand loss output
-    logging.info("***Targets_BxT: {}***".format(targets_BxT))
-    # logging.info("***Targets_BxT: {}***".format(targets_BxT.eval()))
-    logging.info("***One hot labels: {}***".format(tf.one_hot(targets_BxT, self._vocab_size)))
-    # logging.info("***One hot labels: {}***".format(tf.one_hot(targets_BxT, self._vocab_size).eval()))
-    logging.info("***Logits_BxTxV: {}***".format(logits_BxTxV))
-    # logging.info("***Logits_BxTxV: {}***".format(logits_BxTxV.eval()))
-    logging.info("***Targets_mask_BxT: {}***".format(targets_mask_BxT))
-    # logging.info("***Targets_mask_BxT: {}***".format(targets_mask_BxT.eval()))
-
     loss = tf.losses.softmax_cross_entropy(
         tf.one_hot(targets_BxT, self._vocab_size),
         logits_BxTxV,
         label_smoothing=self._label_smoothing,
         weights=targets_mask_BxT)
 
-    # Prints the loss
-    tf.print(loss)
-    # tf.print(loss.eval())
-    logging.info("***Loss: {}***".format(loss))
-    # logging.info("***Loss: {}***".format(loss.eval()))
-
-    return loss, {"logits": logits_BxTxV}, {"targets": targets_BxT}, {"target_mask": targets_mask_BxT}, \
-           {"one_hot_labels": tf.one_hot(targets_BxT, self._vocab_size)}
+    return loss, {"logits": logits_BxTxV, "targets": targets_BxT, "target_mask": targets_mask_BxT,
+                  "one_hot_labels": tf.one_hot(targets_BxT, self._vocab_size)}
 
   def predict(self, features, max_decode_len, beam_size, **beam_kwargs):
     """Predict."""
