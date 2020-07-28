@@ -107,14 +107,26 @@ class TransformerEncoderDecoderModel(base.BaseModel):
     logits_BxTxV = self._embedding_layer(states_BxTxD, False)
     targets_mask_BxT = tf.cast(tf.greater(targets_BxT, 0), self._dtype)
 
-    loss = tf.losses.softmax_cross_entropy(
+    loss_main = tf.losses.softmax_cross_entropy(
         tf.one_hot(targets_BxT, self._vocab_size),
         logits_BxTxV,
         label_smoothing=self._label_smoothing,
         weights=targets_mask_BxT)
 
-    return loss, {"logits": logits_BxTxV, "targets": targets_BxT, "target_mask": targets_mask_BxT,
-                  "one_hot_labels": tf.one_hot(targets_BxT, self._vocab_size)}
+    # additional loss value
+    loss_supp = tf.losses.softmax_cross_entropy(
+        tf.one_hot(targets_BxT, self._vocab_size),  # replace this with matrix of same size but
+        # arbitrary labels (incorrect)
+        logits_BxTxV,
+        label_smoothing=self._label_smoothing,
+        weights=targets_mask_BxT)
+
+    # Add losses to create toy loss
+    loss = loss_main + loss_supp
+
+    return loss, loss_main, loss_supp, {"logits": logits_BxTxV, "targets": targets_BxT,
+                                      "target_mask": targets_mask_BxT, "one_hot_labels":
+                                            tf.one_hot(targets_BxT, self._vocab_size)}
 
   def predict(self, features, max_decode_len, beam_size, **beam_kwargs):
     """Predict."""
