@@ -155,18 +155,20 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
       # log probability to be added to the existing loss - be sure to return both in the logging
       # prob = softmax(logits) --> log(prob) + loss = new loss
 
+
       # Accessing the gradient of loss
       # Assume that the optimizer minimises wrt global step -> which goes through this same process
-      with tf.GradientTape() as tape:
-          gradients = tape.gradient(loss, global_step)
-      train_op = optimizer.apply_gradients(zip(gradients, global_step))
+      # with tf.GradientTape() as tape:
+      #     gradients = tape.gradient(loss, global_step)
+      # train_op = optimizer.apply_gradients(zip(gradients, global_step))
 
-      # train_op = optimizer.minimize(loss, global_step=global_step)
+      train_op = optimizer.minimize(loss, global_step=global_step)
 
       tf.logging.set_verbosity(tf.logging.INFO)
-      logging_hook = tf.train.LoggingTensorHook({"loss": loss, "logits": outputs["logits"],
-                                                 "gradients": gradients, "global_step":
-                                                     global_step}, every_n_iter=5)
+      logging_hook = tf.train.LoggingTensorHook({"loss": loss, "logits": outputs["logits"]},
+                                                every_n_iter=5)
+                                                 # "gradients": gradients, "global_step":
+                                                 #     global_step}, every_n_iter=5)
 
       # Implement ROUGE
       # argmax(logits) for every word to get prediction
