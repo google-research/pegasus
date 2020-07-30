@@ -130,9 +130,9 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
     # Will this add to the logging?
     logging.info("*** LOSS: {} ***".format(loss))
     logging.info("*** LOGITS: {} ***".format(outputs["logits"]))
-    logging.info("*** TARGETS: {} ***".format(outputs["targets"]))
-    logging.info("*** TARGETS_MASK: {} ***".format(outputs["target_mask"]))
-    logging.info("*** ONE_HOT: {} ***".format(outputs["one_hot_labels"]))
+    # logging.info("*** TARGETS: {} ***".format(outputs["targets"]))
+    # logging.info("*** TARGETS_MASK: {} ***".format(outputs["target_mask"]))
+    # logging.info("*** ONE_HOT: {} ***".format(outputs["one_hot_labels"]))
 
     if mode == tf.estimator.ModeKeys.TRAIN:
       init_lr = model_params.learning_rate
