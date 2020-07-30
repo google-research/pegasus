@@ -113,10 +113,11 @@ class TransformerEncoderDecoderModel(base.BaseModel):
         label_smoothing=self._label_smoothing,
         weights=targets_mask_BxT)
 
-    # additional loss value - just adds the same loss value to itself
+    # additional loss value
+    targets_BxT_2 = tf.random.uniform(shape=targets_BxT.get_shape().as_list(), minval=-30,
+                                      maxval=30, dtype=tf.int64)
     loss_2 = tf.losses.softmax_cross_entropy(
-        tf.one_hot(targets_BxT, self._vocab_size),  # replace this with matrix of same size but
-        # arbitrary labels (incorrect)
+        tf.one_hot(targets_BxT_2, self._vocab_size),
         logits_BxTxV,
         label_smoothing=self._label_smoothing,
         weights=targets_mask_BxT)
