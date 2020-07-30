@@ -114,7 +114,7 @@ class TransformerEncoderDecoderModel(base.BaseModel):
         weights=targets_mask_BxT)
 
     # additional loss value
-    targets_BxT_2 = tf.random.uniform(shape=targets_BxT.get_shape().as_list(), minval=-30,
+    targets_BxT_2 = tf.random.uniform(shape=targets_BxT.get_shape().as_list(), minval=0,
                                       maxval=30, dtype=tf.int64)
     loss_2 = tf.losses.softmax_cross_entropy(
         tf.one_hot(targets_BxT_2, self._vocab_size),
