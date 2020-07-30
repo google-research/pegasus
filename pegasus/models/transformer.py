@@ -123,11 +123,11 @@ class TransformerEncoderDecoderModel(base.BaseModel):
         weights=targets_mask_BxT)
 
     # Add losses to create toy loss
-    loss = tf.math.add(loss_1, loss_2)
+    # loss = tf.math.add(loss_1, loss_2)
+    # If you want to use the original loss
+    loss = loss_1
 
-    return loss, {"loss_1": loss_1, "loss_2": loss_2, "logits": logits_BxTxV,
-                  "targets": targets_BxT, "target_mask": targets_mask_BxT, "one_hot_labels":
-                      tf.one_hot(targets_BxT, self._vocab_size)}
+    return loss, {"loss_1": loss_1, "loss_2": loss_2, "logits": logits_BxTxV}
 
   def predict(self, features, max_decode_len, beam_size, **beam_kwargs):
     """Predict."""
