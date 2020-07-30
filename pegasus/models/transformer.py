@@ -124,7 +124,7 @@ class TransformerEncoderDecoderModel(base.BaseModel):
     # Add losses to create toy loss
     loss = tf.math.add(loss_1, loss_2)
 
-    return loss, {"loss_main": loss_1, "loss_supp": loss_2, "logits": logits_BxTxV,
+    return loss, {"loss_1": loss_1, "loss_2": loss_2, "logits": logits_BxTxV,
                   "targets": targets_BxT, "target_mask": targets_mask_BxT, "one_hot_labels":
                       tf.one_hot(targets_BxT, self._vocab_size)}
 

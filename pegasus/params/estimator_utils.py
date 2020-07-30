@@ -159,8 +159,8 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
       train_op = optimizer.minimize(loss, global_step=global_step)
 
       tf.logging.set_verbosity(tf.logging.INFO)
-      logging_hook = tf.train.LoggingTensorHook({"loss": loss, "loss_main": outputs["loss_1"],
-                                                 "loss_supp": outputs["loss_2"], "logits":
+      logging_hook = tf.train.LoggingTensorHook({"loss": loss, "loss_1": outputs["loss_1"],
+                                                 "loss_2": outputs["loss_2"], "logits":
                                                      outputs["logits"]}, every_n_iter=5)
                                                  # "gradients": gradients, "global_step":
                                                  #     global_step}, every_n_iter=5)
