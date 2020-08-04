@@ -19,6 +19,7 @@ import re
 
 from absl import logging
 from pegasus.ops import public_parsing_ops
+from pegasus.eval import text_eval
 from tensor2tensor.utils import adafactor
 import tensorflow as tf
 
@@ -150,30 +151,50 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
       if use_tpu:
         optimizer = tpu_optimizer.CrossShardOptimizer(optimizer)
 
-      # Accessing the gradient of loss
-      # Assume that the optimizer minimises wrt global step -> which goes through this same process
-      # list_of_gradient_variable_pairs = optimizer.compute_gradients(loss)
-      # train_op = optimizer.apply_gradients(list_of_gradient_variable_pairs,
-      # global_step=global_step)
-      # train_op = optimizer.apply_gradients(zip(gradients, global_step))
+      # REINFORCE
+      # Sampling the logits as simple as:
+      # y = tf.distributions.Categorical(logits_BxTxV, dtype=tf.int64)
 
-      train_op = optimizer.minimize(loss, global_step=global_step)
+      # Alternatively could utilise
+      u = tf.random_uniform(shape=outputs["targets"].get_shape().as_list(), minval=0, maxval=1,
+                            dtype=tf.float32)
+      logp = tf.log(tf.math.softmax(outputs["logits"]))  # brings back the logits to normalised
+      # log-prob
+      z = -tf.log(-tf.log(u)) + logp  # computes the Gumbel samples "with location"
+      y_soft = tf.math.softmax(tf.div(z, 0.1))  # computes the "soft" labels
+      y = tf.math.argmax(y_soft)  # computes the corresponding one-hot labels - convert to numpy
 
-      tf.logging.set_verbosity(tf.logging.INFO)
-      logging_hook = tf.train.LoggingTensorHook({"loss": loss, "targets": features["targets"],
-                                                 "argmax_logits": tf.math.argmax(outputs[
-                                                                                     "logits"])},
-                                                every_n_iter=5)
+      # Calculate ROUGE
+      # Convert IDs to predictions using vocab
+      # encoder = public_parsing_ops.create_text_encoder("sentencepiece",
+      # "ckpt/pegasus_ckpt/c4.unigram.newline.10pct.96000.model")
 
-      # Implement ROUGE
-      # argmax(logits) for every word to get prediction
-      # Take this and one_hot labels to calculate ROUGE
+      # target_ids = tf.make_ndarray(y)
+      # pred_ids = tf.make_ndarray(y)  # takes the one_hot labels tensor, and converts to np.array
+      # decode_pred_text = text_eval.ids2str(encoder, pred_ids, None)
+      # decode_target_text = text_eval.ids2str(encoder, target_ids, None)
+
+      # from rouge_score import rouge_scorer
+      # scorer = rouge_scorer.RougeScorer(["rouge1", "rouge2", "rougeL", "rougeLsum"],
+      # use_stemmer=True)
+      # scorer.score(decode_target_text, decode_pred_text)
+      # Output all ROUGE scores - will want to implement one/all of these w/ F1-measure
+
 
       # Implement REINFORCE loss
-      # For every word in the document, sample the logits
-      # Multiply ROUGE score by this log(probability) of sampled logits
+      # reinforce_loss = ROUGE-F1 * logp
+      # combined_loss = tf.math.add(loss, reinforce_loss)
 
       # Implement RELAX loss
+
+      # Accessing the gradient of loss
+      list_of_gradient_variable_pairs = optimizer.compute_gradients(loss)
+      train_op = optimizer.apply_gradients(list_of_gradient_variable_pairs, global_step=global_step)
+
+      # train_op = optimizer.minimize(loss, global_step=global_step)
+
+      tf.logging.set_verbosity(tf.logging.INFO)
+      logging_hook = tf.train.LoggingTensorHook({"loss": loss}, every_n_iter=5)
 
       # This is the configured estimator function that is returned to train the model
       return tpu_estimator.TPUEstimatorSpec(

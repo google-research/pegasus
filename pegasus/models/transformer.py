@@ -128,7 +128,7 @@ class TransformerEncoderDecoderModel(base.BaseModel):
     loss = loss_1
 
     # return loss, {"loss_1": loss_1, "loss_2": loss_2, "logits": logits_BxTxV}
-    return loss, {"logits": logits_BxTxV}
+    return loss, {"logits": logits_BxTxV, "targets": targets_BxT}
 
   def predict(self, features, max_decode_len, beam_size, **beam_kwargs):
     """Predict."""
