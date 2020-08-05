@@ -121,9 +121,9 @@ def transformer_params(patterns, param_overrides):
 def cnn_dailymail(param_overrides):
   return transformer_params(
       {
-          "train_pattern": "tfds:cnn_dailymail/plain_text-train",
-          "dev_pattern": "tfds:cnn_dailymail/plain_text-validation",
-          "test_pattern": "tfds:cnn_dailymail/plain_text-test",
+          "train_pattern": "tfds:cnn_dailymail-train",
+          "dev_pattern": "tfds:cnn_dailymail-validation",
+          "test_pattern": "tfds:cnn_dailymail-test",
           "max_input_len": 1024,
           "max_output_len": 128,
           "train_steps": 210000,

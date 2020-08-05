@@ -45,7 +45,7 @@ class DatasetTest(parameterized.TestCase, tf.test.TestCase):
       ("bigpatent_all", "tfds:big_patent/all"),
       ("bigpatent_y", "tfds:big_patent/y"),
       ("billsum", "tfds_transformed:billsum"),
-      ("cnn_dailymail", "tfds:cnn_dailymail/plain_text"),
+      ("cnn_dailymail", "tfds:cnn_dailymail"),
       ("gigaword", "tfds:gigaword"),
       ("multi_news", "tfds:multi_news"),
       ("newsroom", "tfds:newsroom"),

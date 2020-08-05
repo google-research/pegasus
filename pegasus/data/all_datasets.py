@@ -28,7 +28,7 @@ def get_dataset(input_pattern, shuffle_files):
   Args:
     input_pattern: a string of two segments seperated by colon. If the first
       segment is "tfds" or "tfds_transformed", the second segment is the TFDS
-      build and split, for example, "tfds:cnn_dailymail/plain_text-train".
+      build and split, for example, "tfds:cnn_dailymail-train".
       "tfds" loads the original datasets from TFDS public api,
       "tfds_transformed" load transfromed datasets registered in datasets.py.
       If the first segment is "tfrecord", the second segment is the path of the
