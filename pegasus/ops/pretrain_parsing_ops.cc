@@ -205,6 +205,8 @@ REGISTER_OP("SentenceMaskAndEncode")
     .Output("input_ids: int64")
     .Output("target_ids: int64")
     .Output("mlm_ids: int64")
+    .Output("num_sentences: int32")
+    .Output("num_masked_sentences: int32")
     .Attr("strategy: string")
     .Attr("masked_sentence_ratio: float")
     .Attr("masked_words_ratio: float")
@@ -300,15 +302,23 @@ class SentenceMaskAndEncodeOp : public OpKernel {
     Tensor* input_ids;
     Tensor* target_ids;
     Tensor* mlm_ids;
+    Tensor* num_sentences;
+    Tensor* num_masked_sentences;
     OP_REQUIRES_OK(ctx, ctx->allocate_output(0, TensorShape({1, max_input_len}),
                                              &input_ids));
     OP_REQUIRES_OK(ctx, ctx->allocate_output(
                             1, TensorShape({1, max_target_len}), &target_ids));
     OP_REQUIRES_OK(ctx, ctx->allocate_output(2, TensorShape({1, max_input_len}),
                                              &mlm_ids));
+    OP_REQUIRES_OK(ctx,
+                   ctx->allocate_output(3, TensorShape({1}), &num_sentences));
+    OP_REQUIRES_OK(
+        ctx, ctx->allocate_output(4, TensorShape({1}), &num_masked_sentences));
     input_ids->flat<int64>().setZero();
     target_ids->flat<int64>().setZero();
     mlm_ids->flat<int64>().setZero();
+    num_sentences->flat<int32>().setZero();
+    num_masked_sentences->flat<int32>().setZero();
 
     std::string text = "";
     // set a limit on the total number of words in the text.
@@ -327,6 +337,8 @@ class SentenceMaskAndEncodeOp : public OpKernel {
     }
 
     std::vector<std::string> sentences_vec = SentenceSegment(text);
+    num_sentences->flat<int32>()(0) = sentences_vec.size();
+
     std::vector<std::vector<int64>> sentences_ids_vec =
         EncodeSentences(sentences_vec, encoder_);
 
@@ -386,6 +398,7 @@ class SentenceMaskAndEncodeOp : public OpKernel {
     VecToTensor(input_ids_vec, input_ids, kPadTokenId, 0);
     VecToTensor(target_ids_vec, target_ids, kPadTokenId, 0);
     VecToTensor(mlm_ids_vec, mlm_ids, kPadTokenId, 0);
+    num_masked_sentences->flat<int32>()(0) = indices.size();
   }
 
  private:

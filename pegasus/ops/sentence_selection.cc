@@ -20,9 +20,10 @@
 #include <utility>
 #include <vector>
 
-#include "pegasus/ops/rouge.h"
+#include "glog/logging.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/random/random.h"
+#include "pegasus/ops/rouge.h"
 
 namespace pegasus {
 

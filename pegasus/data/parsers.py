@@ -159,15 +159,16 @@ def string_features_for_pretraining_parser(
 
     supervised = input_dic["supervised"]
 
-    pretrain_inputs, pretrain_targets, pretrain_masked_inputs = pretrain_parsing_ops.sentence_mask_and_encode(
-        input_dic[input_feature], max_input_len, max_target_len,
-        max_total_words, parser_strategy, parser_masked_sentence_ratio,
-        parser_masked_words_ratio, parser_mask_word_options_prob,
-        parser_mask_sentence_options_prob, vocab_filename, encoder_type,
-        parser_rouge_ngrams_size, parser_rouge_metric_type,
-        parser_rouge_stopwords_filename, parser_rouge_compute_option,
-        parser_rouge_noise_ratio, parser_dynamic_mask_min_ratio,
-        shift_special_token_id)
+    (pretrain_inputs, pretrain_targets, pretrain_masked_inputs, _,
+     _) = pretrain_parsing_ops.sentence_mask_and_encode(
+         input_dic[input_feature], max_input_len, max_target_len,
+         max_total_words, parser_strategy, parser_masked_sentence_ratio,
+         parser_masked_words_ratio, parser_mask_word_options_prob,
+         parser_mask_sentence_options_prob, vocab_filename, encoder_type,
+         parser_rouge_ngrams_size, parser_rouge_metric_type,
+         parser_rouge_stopwords_filename, parser_rouge_compute_option,
+         parser_rouge_noise_ratio, parser_dynamic_mask_min_ratio,
+         shift_special_token_id)
 
     supervised_inputs = parsing_ops.encode(
         tf.reshape(input_dic["inputs"], [1]), max_input_len, vocab_filename,
