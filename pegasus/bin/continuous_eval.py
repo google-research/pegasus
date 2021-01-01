@@ -77,14 +77,14 @@ def main(_):
         raise ValueError(
             "The parameter eval_max_predictions has to be defined on TPU.")
 
-    # Token-based metrics (e.g. perplexity, accuracy) calculated on the dev set.
+    # Token-based metrics calculated on the same set used to train.    
     estimator.evaluate(
         input_fn=infeed.get_input_fn(params.parser, params.train_pattern,
                                      tf.estimator.ModeKeys.EVAL),
         steps=eval_steps,
         name="train")
 
-    # Token-based metrics calculated on the same set used to train.
+    # Token-based metrics (e.g. perplexity, accuracy) calculated on the dev set.
     estimator.evaluate(
         input_fn=infeed.get_input_fn(params.parser, params.dev_pattern,
                                      tf.estimator.ModeKeys.EVAL),
