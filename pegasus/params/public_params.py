@@ -121,14 +121,14 @@ def transformer_params(patterns, param_overrides):
 def cnn_dailymail(param_overrides):
   return transformer_params(
       {
-          "train_pattern": "tfds:cnn_dailymail/plain_text-train",
-          "dev_pattern": "tfds:cnn_dailymail/plain_text-validation",
-          "test_pattern": "tfds:cnn_dailymail/plain_text-test",
+          "train_pattern": "tfrecord:gs://test_pegasusus/cnndm/dataset/train_cnndm_ext.tfrecord",
+          "dev_pattern": "tfrecord:gs://test_pegasusus/cnndm/dataset/cnndm_validation.tfrecord",
+          "test_pattern": "tfrecord:gs://test_pegasusus/cnndm/dataset/cnndm_test.tfrecord",
           "max_input_len": 1024,
           "max_output_len": 128,
           "train_steps": 210000,
           "learning_rate": 0.001,
-          "batch_size": 8,
+          "batch_size": 32,
       }, param_overrides)
 
 
@@ -151,13 +151,13 @@ def newsroom_transformer(param_overrides):
 def aeslc_transformer(param_overrides):
   return transformer_params(
       {
-          "train_pattern": "tfds:aeslc-train",
-          "dev_pattern": "tfds:aeslc-validation",
-          "test_pattern": "tfds:aeslc-test",
+          "train_pattern": "tfrecord:gs://test_pegasusus/aeslc/dataset/train_aeslc_ext.tfrecord",
+          "dev_pattern": "tfrecord:gs://test_pegasusus/aeslc/dataset/aeslc_validation.tfrecord",
+          "test_pattern": "tfrecord:gs://test_pegasusus/aeslc/dataset/aeslc_test.tfrecord",
           "max_input_len": 512,
           "max_output_len": 32,
           "train_steps": 32000,
-          "learning_rate": 0.0001,
+          "learning_rate": 0.0008,
           "batch_size": 8,
       }, param_overrides)
 
@@ -196,14 +196,14 @@ def gigaword_transformer(param_overrides):
 def reddit_tifu_long_transformer(param_overrides):
   return transformer_params(
       {
-          "train_pattern": "tfds_transformed:reddit_tifu/long-train",
-          "dev_pattern": "tfds_transformed:reddit_tifu/long-validation",
-          "test_pattern": "tfds_transformed:reddit_tifu/long-test",
+          "train_pattern": "tfrecord:gs://test_pegasusus/reddit/dataset/train_reddit_ext.tfrecord",
+          "dev_pattern": "tfrecord:gs://test_pegasusus/reddit/dataset/reddit_validation.tfrecord",
+          "test_pattern": "tfrecord:gs://test_pegasusus/reddit/dataset/reddit_test.tfrecord",
           "max_input_len": 1024,
           "max_output_len": 128,
           "train_steps": 8000,
           "learning_rate": 0.0001,
-          "batch_size": 8,
+          "batch_size": 32,
       }, param_overrides)
 
 
@@ -226,13 +226,13 @@ def wikihow_all_transformer(param_overrides):
 def xsum_transformer(param_overrides):
   return transformer_params(
       {
-          "train_pattern": "tfds:xsum-train",
-          "dev_pattern": "tfds:xsum-validation",
-          "test_pattern": "tfds:xsum-test",
+          "train_pattern": "tfrecord:gs://test_pegasusus/dataset/train_xsum_ext.tfrecord",
+          "dev_pattern": "tfrecord:gs://test_pegasusus/dataset/xsum_validation.tfrecord",
+          "test_pattern": "tfrecord:gs://test_pegasusus/dataset/xsum_test.tfrecord",
           "max_input_len": 1024,
           "max_output_len": 64,
           "train_steps": 30000,
-          "learning_rate": 0.0001,
+          "learning_rate": 0.0005,
           "batch_size": 8,
       }, param_overrides)
 
