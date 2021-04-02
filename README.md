@@ -144,7 +144,7 @@ def my_param(param_overrides):
 
 ## Evaluation metrics.
 
-Evaluation results can be found in `mode_dir`. Summarization metrics are automatically
+Evaluation results can be found in `model_dir`. Summarization metrics are automatically
 calculated for each evaluation point.
 
 -   [ROUGE](https://www.aclweb.org/anthology/W04-1013.pdf) is the main metric
