@@ -173,3 +173,7 @@ Several types of output files can be found in `model_dir`
 
 Pretraining (on C4 or any other corpus) requires a customly built tensorflow that includes ops for on-the-fly parsing that processes raw text document into model inputs and targets ids. Please refer to pegasus/ops/pretrain_parsing_ops.cc and pegasus/data/parsers.py for details.
 
+# Acknowledgements
+Contains parts of code and design for training and evaluation of summarization models originally by Ben Goodrich <bgoodrich@google.com>.
+
+
