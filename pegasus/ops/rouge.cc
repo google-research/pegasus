@@ -308,7 +308,7 @@ float RougeDistance::ComputeSimilarity(
 
 std::vector<float> RougeDistance::ComputeSimilaritiesGreedily(
     const RougeSentenceData& source_data,
-    const std::vector<const std::shared_ptr<RougeSentenceData>>&
+    const std::vector<std::shared_ptr<RougeSentenceData>>&
         target_data_vec,
     float min_delta_similarity, int max_matches) const {
   std::vector<float> delta_scores(target_data_vec.size());

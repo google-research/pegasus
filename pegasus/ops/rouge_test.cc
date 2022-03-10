@@ -370,7 +370,7 @@ TEST(RougeGreedySimilaritiesTest, Ngrams) {
       [&](const std::string& left, const std::vector<std::string>& right_vec,
           float min_similarity, int32 max_matches) -> std::vector<float> {
     auto left_data = rouge->PrecomputeSentenceData(left);
-    std::vector<const std::shared_ptr<RougeSentenceData>> right_data_vec;
+    std::vector<std::shared_ptr<RougeSentenceData>> right_data_vec;
     for (const auto right : right_vec) {
       right_data_vec.emplace_back(rouge->PrecomputeSentenceData(right));
     }

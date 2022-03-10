@@ -131,7 +131,7 @@ class RougeDistance final {
   // -1 means use all.
   std::vector<float> ComputeSimilaritiesGreedily(
       const RougeSentenceData& source_data,
-      const std::vector<const std::shared_ptr<RougeSentenceData>>&
+      const std::vector<std::shared_ptr<RougeSentenceData>>&
           target_data_vec,
       float min_delta_similarity = 0.0, int32 max_matches = -1) const;
 
