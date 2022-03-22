@@ -19,6 +19,7 @@ from pegasus.params import all_params  # pylint: disable=unused-import
 from pegasus.params import estimator_utils
 from pegasus.params import registry
 import tensorflow as tf
+from tensorflow import estimator as tf_estimator
 
 flags = tf.flags
 FLAGS = flags.FLAGS
@@ -84,7 +85,7 @@ def main(_):
         input_fn=infeed.get_input_fn(
             params.parser,
             params.train_pattern,
-            tf.estimator.ModeKeys.TRAIN,
+            tf_estimator.ModeKeys.TRAIN,
             parallelism=FLAGS.train_infeed_parallelism),
         max_steps=train_steps)
 

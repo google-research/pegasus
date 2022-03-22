@@ -19,6 +19,7 @@ from absl.testing import parameterized
 from pegasus.data import infeed
 from pegasus.data import parsers
 import tensorflow as tf
+from tensorflow import estimator as tf_estimator
 
 _SUBWORDS = ("pegasus/" "ops/testdata/sp_test.model")
 _TEST_PATH = "pegasus/data/testdata/"
@@ -36,7 +37,7 @@ class InfeedTest(tf.test.TestCase, parameterized.TestCase):
       return parsers.supervised_strings_parser(_SUBWORDS, "sentencepiece", 30,
                                                10, mode)
 
-    data = infeed.get_input_fn(parser_fn, config, tf.estimator.ModeKeys.TRAIN)({
+    data = infeed.get_input_fn(parser_fn, config, tf_estimator.ModeKeys.TRAIN)({
         "batch_size": 4
     })
     d = next(iter(data))

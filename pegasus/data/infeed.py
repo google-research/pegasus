@@ -18,6 +18,7 @@
 from pegasus.data import all_datasets
 from pegasus.ops import public_parsing_ops
 import tensorflow as tf
+from tensorflow import estimator as tf_estimator
 
 
 def get_input_fn(parser_fn,
@@ -32,7 +33,7 @@ def get_input_fn(parser_fn,
   # protobufs. The parser_fn also returns expected shapes, as a map from
   # feature_name to feature_shape (list of ints).
   parser, shapes = parser_fn(mode=mode)
-  training = mode == tf.estimator.ModeKeys.TRAIN
+  training = mode == tf_estimator.ModeKeys.TRAIN
   if not training:
     parallelism = 1
 
@@ -65,5 +66,5 @@ def serving_input_fn(params):
                                      params.length_bucket_size > 0)
   inputs = tf.reshape(inputs, [params.batch_size, params.max_input_len])
   features = {"inputs": inputs}
-  return tf.estimator.export.ServingInputReceiver(
+  return tf_estimator.export.ServingInputReceiver(
       features=features, receiver_tensors=inputs_ph)

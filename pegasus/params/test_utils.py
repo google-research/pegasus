@@ -21,7 +21,7 @@ from pegasus.data import infeed
 from pegasus.params import all_params  # pylint: disable=unused-import
 from pegasus.params import estimator_utils
 from pegasus.params import registry
-import tensorflow as tf
+from tensorflow import estimator as tf_estimator
 
 
 class ParamsTestCase(parameterized.TestCase):
@@ -36,13 +36,13 @@ class ParamsTestCase(parameterized.TestCase):
     input_fn = infeed.get_input_fn(
         model_params.parser,
         model_params.train_pattern,
-        tf.estimator.ModeKeys.PREDICT,
+        tf_estimator.ModeKeys.PREDICT,
         parallelism=8)
     estimator.train(input_fn=input_fn, max_steps=max_steps)
     estimator.train(input_fn=input_fn, max_steps=max_steps)
     eval_input_fn = infeed.get_input_fn(model_params.parser,
                                         model_params.dev_pattern,
-                                        tf.estimator.ModeKeys.EVAL)
+                                        tf_estimator.ModeKeys.EVAL)
     estimator.evaluate(input_fn=eval_input_fn, steps=1, name="eval")
 
   def run_eval(self, params, param_overrides, max_steps=2):
@@ -55,7 +55,7 @@ class ParamsTestCase(parameterized.TestCase):
     input_fn = infeed.get_input_fn(
         model_params.parser,
         model_params.test_pattern,
-        tf.estimator.ModeKeys.PREDICT,
+        tf_estimator.ModeKeys.PREDICT,
         parallelism=8)
     predictions = estimator.predict(input_fn=input_fn)
     predictions = itertools.islice(predictions, max_steps)

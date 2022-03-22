@@ -24,6 +24,7 @@ from pegasus.params import all_params  # pylint: disable=unused-import
 from pegasus.params import estimator_utils
 from pegasus.params import registry
 import tensorflow as tf
+from tensorflow import estimator as tf_estimator
 
 flags = tf.flags
 FLAGS = flags.FLAGS
@@ -115,7 +116,7 @@ def main(_):
       else:
         pattern = params.dev_pattern
       input_fn = infeed.get_input_fn(params.parser, pattern,
-                                     tf.estimator.ModeKeys.PREDICT)
+                                     tf_estimator.ModeKeys.PREDICT)
       estimator = estimator_utils.create_estimator(FLAGS.master, eval_dir,
                                                    FLAGS.use_tpu,
                                                    FLAGS.iterations_per_loop,

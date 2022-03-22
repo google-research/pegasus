@@ -21,6 +21,7 @@ from absl import logging
 from pegasus.ops import public_parsing_ops
 from tensor2tensor.utils import adafactor
 import tensorflow as tf
+from tensorflow import estimator as tf_estimator
 
 from tensorflow.contrib import summary as contrib_summary
 from tensorflow.contrib import tpu as contrib_tpu
@@ -79,7 +80,7 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
         tf.variance_scaling_initializer(
             1.0, mode="fan_avg", distribution="uniform"))
 
-    if mode == tf.estimator.ModeKeys.PREDICT:
+    if mode == tf_estimator.ModeKeys.PREDICT:
       predictions = model_params.estimator_prediction_fn(features)
 
       if include_features_in_predictions:
@@ -97,7 +98,7 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
         contrib_tpu.outside_compilation(decode_host_call, predictions)
       return tpu_estimator.TPUEstimatorSpec(mode=mode, predictions=predictions)
 
-    training = mode == tf.estimator.ModeKeys.TRAIN
+    training = mode == tf_estimator.ModeKeys.TRAIN
     if use_tpu and model_params.use_bfloat16:
       with contrib_tpu.bfloat16_scope():
         loss, outputs = model_params.model()(features, training)
@@ -108,7 +109,7 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
     # Tile all scalars to 1 dimension vector.
     outputs = _tile_scalar_to_batch_size(outputs, model_params.batch_size)
 
-    if mode == tf.estimator.ModeKeys.TRAIN:
+    if mode == tf_estimator.ModeKeys.TRAIN:
       init_lr = model_params.learning_rate
       global_step = tf.train.get_global_step()
       lr = init_lr / 0.01 * tf.rsqrt(
@@ -132,7 +133,7 @@ def _estimator_model_fn(use_tpu, model_params, model_dir,
           scaffold_fn=_load_vars_from_checkpoint(use_tpu,
                                                  train_init_checkpoint),
           host_call=add_scalars_to_summary(model_dir, {"learning_rate": lr}))
-    if mode == tf.estimator.ModeKeys.EVAL:
+    if mode == tf_estimator.ModeKeys.EVAL:
       eval_metrics = model_params.estimator_eval_metrics_fn(features, outputs)
       return tpu_estimator.TPUEstimatorSpec(
           mode=mode, loss=loss, eval_metrics=eval_metrics)

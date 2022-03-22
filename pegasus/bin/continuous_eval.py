@@ -21,6 +21,7 @@ from pegasus.params import all_params  # pylint: disable=unused-import
 from pegasus.params import estimator_utils
 from pegasus.params import registry
 import tensorflow as tf
+from tensorflow import estimator as tf_estimator
 from tensorflow.contrib import training as contrib_training
 
 flags = tf.flags
@@ -57,7 +58,7 @@ def main(_):
     tf.logging.info("Evaluating at global step %d", global_step)
 
     input_fn = infeed.get_input_fn(params.parser, params.dev_pattern,
-                                   tf.estimator.ModeKeys.PREDICT)
+                                   tf_estimator.ModeKeys.PREDICT)
     predictions = estimator.predict(input_fn=input_fn)
     if params.eval_max_predictions > 0:
       eval_max_predictions = params.eval_max_predictions
@@ -80,14 +81,14 @@ def main(_):
     # Token-based metrics (e.g. perplexity, accuracy) calculated on the dev set.
     estimator.evaluate(
         input_fn=infeed.get_input_fn(params.parser, params.train_pattern,
-                                     tf.estimator.ModeKeys.EVAL),
+                                     tf_estimator.ModeKeys.EVAL),
         steps=eval_steps,
         name="train")
 
     # Token-based metrics calculated on the same set used to train.
     estimator.evaluate(
         input_fn=infeed.get_input_fn(params.parser, params.dev_pattern,
-                                     tf.estimator.ModeKeys.EVAL),
+                                     tf_estimator.ModeKeys.EVAL),
         steps=eval_steps,
         name="dev")
 
@@ -96,12 +97,12 @@ def main(_):
 
   # Run a final eval on entire dev and test sets.
   input_fn = infeed.get_input_fn(params.parser, params.test_pattern,
-                                 tf.estimator.ModeKeys.PREDICT)
+                                 tf_estimator.ModeKeys.PREDICT)
   predictions = estimator.predict(input_fn=input_fn)
   params.eval(predictions, FLAGS.model_dir, global_step,
               "eval_decode_final_test", FLAGS.enable_logging)
   input_fn = infeed.get_input_fn(params.parser, params.dev_pattern,
-                                 tf.estimator.ModeKeys.PREDICT)
+                                 tf_estimator.ModeKeys.PREDICT)
   predictions = estimator.predict(input_fn=input_fn)
   params.eval(predictions, FLAGS.model_dir, global_step,
               "eval_decode_final_dev", FLAGS.enable_logging)
