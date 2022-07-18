@@ -40,7 +40,7 @@ setuptools.setup(
         'rouge-score',
         'sacrebleu',
         'sentencepiece',
-        'tensorflow==1.15'
+        'tensorflow==1.15',
         'tensorflow-text==1.15.0rc0',
         'tfds-nightly',
         'tensor2tensor==1.15.0',
