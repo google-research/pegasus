@@ -1,4 +1,4 @@
-# Copyright 2022 The PEGASUS Authors..
+# Copyright 2023 The PEGASUS Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,8 +23,11 @@ from pegasus.flax.models.decoders.extended import extended as extended_decoder
 from pegasus.flax.models.encoders.bigbird import bigbird
 from pegasus.flax.models.encoders.empty import empty
 from pegasus.flax.models.encoders.global_local import global_local
+from pegasus.flax.models.encoders.local import local
 from pegasus.flax.models.encoders.local2 import local2
+from pegasus.flax.models.encoders.longformer import longformer
 from pegasus.flax.models.encoders.performer import performer
+from pegasus.flax.models.encoders.topdown import topdown
 from pegasus.flax.models.encoders.transformer import transformer
 from pegasus.flax.models.shared import attention
 
@@ -58,14 +61,27 @@ class Seq2SeqConfig:
   encoder_type: str = "transformer"
   bigbird__block_size: int = 64
   bigbird__num_rand_blocks: int = 3
+  local__block_size: int = 50
   local2__block_size: int = 50
   local2__stagger_local_blocks: bool = True
   global_local__num_global_tokens: int = 32
   global_local__block_size: int = 50
   global_local__stagger_local_blocks: bool = True
+  longformer__sliding_window_size: int = 256
   performer__attention_fn_cls: str = "generalized"
   performer__generalized_nb_features: int = 256
   performer__generalized_features_type: str = "ortho"
+  topdown__block_size: int = 1024
+  topdown__segment_size: int = 1024
+  topdown__stride: int = 1024
+  topdown__num_local_layers: int = 8
+  topdown__num_segment_layers: int = 2
+  topdown__num_topdown_layers: int = 4
+  topdown__use_segments: bool = True
+  topdown__add_post_layernorms: bool = True
+  topdown__add_pos_emb_to_segments: bool = False
+  topdown__learned_segment_pos_embs: bool = False
+  topdown__stagger_local_blocks: bool = True
 
   decoder_type: str = "basic"
   decoder_use_encoded_segment: bool = False
@@ -108,6 +124,7 @@ def create_seq2seq_config_from_train_config(config, vocab_size):
       bias_init=nn.initializers.normal(stddev=1e-6),
       encoder_pos_max_scale=config.encoder_pos_max_scale,
       encoder_type=config.encoder.encoder_type,
+      local__block_size=config.encoder.local.block_size,
       local2__block_size=config.encoder.local2.block_size,
       local2__stagger_local_blocks=config.encoder.local2.stagger_local_blocks,
       global_local__block_size=config.encoder.global_local.block_size,
@@ -117,11 +134,26 @@ def create_seq2seq_config_from_train_config(config, vocab_size):
       .stagger_local_blocks,
       bigbird__block_size=config.encoder.bigbird.block_size,
       bigbird__num_rand_blocks=config.encoder.bigbird.num_rand_blocks,
+      longformer__sliding_window_size=config.encoder.longformer
+      .sliding_window_size,
       performer__attention_fn_cls=config.encoder.performer.attention_fn_cls,
       performer__generalized_nb_features=config.encoder.performer
       .generalized_nb_features,
       performer__generalized_features_type=config.encoder.performer
       .generalized_features_type,
+      topdown__block_size=config.encoder.topdown.block_size,
+      topdown__segment_size=config.encoder.topdown.segment_size,
+      topdown__stride=config.encoder.topdown.stride,
+      topdown__num_local_layers=config.encoder.topdown.num_local_layers,
+      topdown__num_segment_layers=config.encoder.topdown.num_segment_layers,
+      topdown__num_topdown_layers=config.encoder.topdown.num_topdown_layers,
+      topdown__use_segments=config.encoder.topdown.use_segments,
+      topdown__add_post_layernorms=config.encoder.topdown.add_post_layernorms,
+      topdown__add_pos_emb_to_segments=config.encoder.topdown
+      .add_pos_emb_to_segments,
+      topdown__learned_segment_pos_embs=config.encoder.topdown
+      .learned_segment_pos_embs,
+      topdown__stagger_local_blocks=config.encoder.topdown.stagger_local_blocks,
       decoder_type=config.decoder.decoder_type,
       decoder_use_encoded_segment=config.decoder.use_encoded_segment,
       decoder_encoded_segment_size=config.decoder.encoded_segment_size,
@@ -390,6 +422,13 @@ def get_encoder(config: Seq2SeqConfig,
         train=common_args["train"],
         dropout_rate=common_args["dropout_rate"],
     )
+  elif config.encoder_type == "local":
+    del common_args["dtype"]
+    return local.LocalTransformerEncoder(
+        block_size=config.local__block_size,
+        t5_rel_pos_embedding=t5_rel_pos_embedding,
+        **common_args,
+    )
   elif config.encoder_type == "local2":
     return local2.Local2TransformerEncoder(
         block_size=config.local2__block_size,
@@ -401,6 +440,11 @@ def get_encoder(config: Seq2SeqConfig,
         block_size=config.global_local__block_size,
         num_global_tokens=config.global_local__num_global_tokens,
         stagger_local_blocks=config.global_local__stagger_local_blocks,
+        **common_args,
+    )
+  elif config.encoder_type == "longformer":
+    return longformer.LongformerEncoder(
+        sliding_window_size=config.longformer__sliding_window_size,
         **common_args,
     )
   elif config.encoder_type == "performer":
@@ -422,6 +466,22 @@ def get_encoder(config: Seq2SeqConfig,
         **common_args,
         attention_fn_cls=config.performer__attention_fn_cls,
         attention_fn_kwargs=attention_fn_kwargs,
+    )
+  elif config.encoder_type == "topdown":
+    args = {k: v for k, v in common_args.items() if k != "num_layers"}
+    return topdown.TopDownEncoder(
+        **args,
+        block_size=config.topdown__block_size,
+        segment_size=config.topdown__segment_size,
+        stride=config.topdown__stride,
+        num_local_layers=config.topdown__num_local_layers,
+        num_segment_layers=config.topdown__num_segment_layers,
+        num_topdown_layers=config.topdown__num_topdown_layers,
+        use_segments=config.topdown__use_segments,
+        add_post_layernorms=config.topdown__add_post_layernorms,
+        add_pos_emb_to_segments=config.topdown__add_pos_emb_to_segments,
+        learned_segment_pos_embs=config.topdown__learned_segment_pos_embs,
+        stagger_local_blocks=config.topdown__stagger_local_blocks,
     )
   else:
     raise NotImplementedError(config.encoder_type)

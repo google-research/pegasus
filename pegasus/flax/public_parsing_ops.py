@@ -1,4 +1,4 @@
-# Copyright 2022 The PEGASUS Authors..
+# Copyright 2023 The PEGASUS Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ def encode(text: tf.Tensor,
     ids: encoded ids from text.
   """
   num_shift_tokens, has_newline = _check_tokenizer_type(tokenizer_type)
-  sp_model = tf.io.gfile.GFile(vocab_filename, "rb").read()
+  sp_model = tf.gfile.GFile(vocab_filename, "rb").read()
   tokenizer = tf_text.SentencepieceTokenizer(model=sp_model)
   batch_size = tf.shape(text)[0]
   if has_newline:
@@ -109,7 +109,7 @@ def decode(ids: tf.Tensor, vocab_filename: str,
     text: decoded tensor text from ids.
   """
   num_shift_tokens, has_newline = _check_tokenizer_type(tokenizer_type)
-  sp_model = tf.io.gfile.GFile(vocab_filename, "rb").read()
+  sp_model = tf.gfile.GFile(vocab_filename, "rb").read()
   tokenizer = tf_text.SentencepieceTokenizer(model=sp_model)
   ids = tf.where(ids > 1 + num_shift_tokens, ids - num_shift_tokens, ids)
   ids = tf.cast(ids, tf.int32)
@@ -149,7 +149,7 @@ class SentencePieceEncoder(object):
                num_shift_tokens: int = _NUM_SHIFT_TOKENS,
                newline_symbol: str = ""):
     self._tokenizer = sentencepiece_processor.SentencePieceProcessor()
-    self._sp_model = tf.io.gfile.GFile(sentencepiece_model_file, "rb").read()
+    self._sp_model = tf.gfile.GFile(sentencepiece_model_file, "rb").read()
     self._tokenizer.LoadFromSerializedProto(self._sp_model)
     self._num_shift_tokens = num_shift_tokens
     self._newline_symbol = newline_symbol

@@ -1,4 +1,4 @@
-# Copyright 2022 The PEGASUS Authors..
+# Copyright 2023 The PEGASUS Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ r"""Convert Pegasus weights to be compatible with Flax.
 
 Sample usage:
 
-  python convert_from_pegasus_to_flax.py \
+  python convert_from_pegasus_to_flax.py.py \
     --pegasus_checkpoint_path <path> \
     --output_dir=/path/to/output
 
@@ -39,8 +39,7 @@ import tensorflow as tf
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string('tokenizer_path', '', 'Path to tokenizer file (e.g. .../c4.unigram.newline.10pct.96000.model)')
-flags.DEFINE_string('pegasus_checkpoint_path', '', 'Input checkpoint (e.g. ".../model.ckpt-####")')
+flags.DEFINE_string('pegasus_checkpoint_path', '', 'Input checkpoint')
 flags.DEFINE_string('output_dir', '', 'Output checkpoint folder')
 flags.DEFINE_string('size', 'large', 'Pegasus size (base|large)')
 flags.DEFINE_integer('seed', 1234,
@@ -82,7 +81,7 @@ def migrate_encoder(num_layers):
 
 
 def migrate_model(num_encoder_layers=16, num_decoder_layers=16):
-  """Migrate the model."""
+  """Migrate the enter model."""
   mapping = {}
   mapping.update(migrate_encoder(num_layers=num_encoder_layers))
   mapping.update(shared.migrate_decoder(num_decoder_layers))
@@ -218,9 +217,7 @@ def convert(config,
     return old_state_dict, new_state_dict
 
 
-def convert_model(pegasus_checkpoint_path: str,
-                  tokenizer_path: str,
-                  output_dir: str, verbose=True,
+def convert_model(pegasus_checkpoint_path: str, output_dir: str, verbose=True,
                   check_against_optimizer=True,
                   return_states=False, do_save=True,
                   size='large'):
@@ -231,7 +228,6 @@ def convert_model(pegasus_checkpoint_path: str,
     config = pegasus_large_config.get_config()
   else:
     raise KeyError(size)
-  config.tokenizer_path = tokenizer_path
   return convert(
       config=config,
       pegasus_checkpoint_path=pegasus_checkpoint_path,
@@ -246,10 +242,8 @@ def convert_model(pegasus_checkpoint_path: str,
 def main(unused_argv):
   convert_model(
       pegasus_checkpoint_path=FLAGS.pegasus_checkpoint_path,
-      tokenizer_path=FLAGS.tokenizer_path,
       output_dir=FLAGS.output_dir,
-      size=FLAGS.size,
-  )
+      size=FLAGS.size)
 
 
 if __name__ == '__main__':
