@@ -25,7 +25,6 @@ from pegasus.flax.models.encoders.empty import empty
 from pegasus.flax.models.encoders.global_local import global_local
 from pegasus.flax.models.encoders.local import local
 from pegasus.flax.models.encoders.local2 import local2
-from pegasus.flax.models.encoders.longformer import longformer
 from pegasus.flax.models.encoders.performer import performer
 from pegasus.flax.models.encoders.topdown import topdown
 from pegasus.flax.models.encoders.transformer import transformer
@@ -440,11 +439,6 @@ def get_encoder(config: Seq2SeqConfig,
         block_size=config.global_local__block_size,
         num_global_tokens=config.global_local__num_global_tokens,
         stagger_local_blocks=config.global_local__stagger_local_blocks,
-        **common_args,
-    )
-  elif config.encoder_type == "longformer":
-    return longformer.LongformerEncoder(
-        sliding_window_size=config.longformer__sliding_window_size,
         **common_args,
     )
   elif config.encoder_type == "performer":
