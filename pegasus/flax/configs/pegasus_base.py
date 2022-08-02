@@ -220,10 +220,6 @@ def get_default_config():
   config.encoder.bigbird.block_size = 64
   config.encoder.bigbird.num_rand_blocks = 3
 
-  # local
-  config.encoder.local = ml_collections.ConfigDict()
-  config.encoder.local.block_size = 64
-
   # local2
   config.encoder.local2 = ml_collections.ConfigDict()
   config.encoder.local2.block_size = 64
@@ -234,10 +230,6 @@ def get_default_config():
   config.encoder.global_local.block_size = 64
   config.encoder.global_local.num_global_tokens = 32
   config.encoder.global_local.stagger_local_blocks = True
-
-  # longformer
-  config.encoder.longformer = ml_collections.ConfigDict()
-  config.encoder.longformer.sliding_window_size = 256
 
   # topdown
   # Note: Top-Down paper uses 1024 block size

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests Longformer."""
+"""Tests BigBird."""
 
 from absl.testing import absltest
 from absl.testing import parameterized
