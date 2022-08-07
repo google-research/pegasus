@@ -1,26 +1,49 @@
 # PEGASUS and PEGASUS-X in JAX/Flax
 
-# Overview
+## Overview
 
 This folder contains code for the Flax implementation of the PEGASUS model, as well as the PEGASUS-X model
 that is adapted for long input summarization.
 
-# Preparation
+## Preparation
 
-## Model Conversion from TF Checkpoints
+### Model Conversion from TF Checkpoints
 
 To convert PEGASUS TensorFlow checkpoints for use with the Flax code, use the script 
 [convert_from_pegasus_to_flax](checkpoint_conversion/convert_from_pegasus_to_flax.py).
 
-## Model Conversion between encoder architectures
+### Model Conversion between encoder architectures
 
-## Tokenizer
+### Tokenizer
 
 You will also need to download the tokenizer file from [here](https://storage.googleapis.com/pegasus_ckpt/c4.unigram.newline.10pct.96000.model).
 
-# Fine-tuning
+### Checkpoints:
 
-## Data
+The full set of available checkpoints can be found in the [PEGASUS GCS Bucket](https://console.cloud.google.com/storage/browser/pegasus_ckpt/).
+
+We highlight the notable PEGASUS-X-specific checkpoints here:
+
+* PEGASUS-X-base (272M):
+  * [PEGASUS-X-base (adapted but not fine-tuned)](https://storage.googleapis.com/pegasus_ckpt/px/untuned/base/checkpoint_1800000)
+  * [Fine-tuned on arXiv](https://storage.googleapis.com/pegasus_ckpt/px/tuned/base/arxiv_beam2_alpha1.ckpt)
+  * [Fine-tuned on Big Patent](https://storage.googleapis.com/pegasus_ckpt/px/tuned/base/bigpatent.ckpt)
+  * [Fine-tuned on PubMed](https://storage.googleapis.com/pegasus_ckpt/px/tuned/base/pubmed.ckpt)
+  * [Fine-tuned on GovReport (SCROLLS)](https://storage.googleapis.com/pegasus_ckpt/px/tuned/base/scrolls_govreport.ckpt)
+  * [Fine-tuned on QMSum (SCROLLS)](https://storage.googleapis.com/pegasus_ckpt/px/tuned/base/scrolls_qmsum.ckpt)
+  * [Fine-tuned on SummScreen/FD (SCROLLS)](https://storage.googleapis.com/pegasus_ckpt/px/tuned/base/scrolls_summscreen.ckpt)
+* PEGASUS-X (568M):
+  * [PEGASUS-X (adapted but not fine-tuned)](https://storage.googleapis.com/pegasus_ckpt/px/untuned/large/checkpoint_1800000)
+  * [Fine-tuned on arXiv](https://storage.googleapis.com/pegasus_ckpt/px/tuned/large/arxiv_beam2_alpha1.ckpt)
+  * [Fine-tuned on Big Patent](https://storage.googleapis.com/pegasus_ckpt/px/tuned/large/bigpatent.ckpt)
+  * [Fine-tuned on PubMed](https://storage.googleapis.com/pegasus_ckpt/px/tuned/large/pubmed.ckpt)
+  * [Fine-tuned on GovReport (SCROLLS)](https://storage.googleapis.com/pegasus_ckpt/px/tuned/large/scrolls_govreport.ckpt)
+  * [Fine-tuned on QMSum (SCROLLS)](https://storage.googleapis.com/pegasus_ckpt/px/tuned/large/scrolls_qmsum.ckpt)
+  * [Fine-tuned on SummScreen/FD (SCROLLS)](https://storage.googleapis.com/pegasus_ckpt/px/tuned/large/scrolls_summscreen.ckpt)
+
+## Fine-tuning
+
+### Data
 
 First, we need to prepare the data for fine-tuning using TFDS. 
 
@@ -30,7 +53,7 @@ For example, this is the command for downloading and preparing the SCROLLS SummS
 python -m tensorflow_datasets.scripts.download_and_prepare --datasets=scrolls/summ_screen_fd
 ```
 
-## Fine-tuning a model
+### Fine-tuning a model
 
 To fine-tune the model, you will need modify a config file, and then supply it to the run command.
 A sample is provided [here](configs/examples/summscreen_eval.py).
@@ -57,7 +80,7 @@ python pegasus/flax/main.py \
     --workdir path/to/fine_tuning_output
 ```
 
-## Evaluating the model
+### Evaluating the model
 
 To evaluate a model, like with fine-tuning, you will need modify a config file accordingly.
 A sample is provided [here](configs/examples/summscreen_eval.py).
