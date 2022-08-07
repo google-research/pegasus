@@ -25,7 +25,6 @@ from pegasus.flax.models.encoders.empty import empty
 from pegasus.flax.models.encoders.global_local import global_local
 from pegasus.flax.models.encoders.local2 import local2
 from pegasus.flax.models.encoders.performer import performer
-from pegasus.flax.models.encoders.topdown import topdown
 from pegasus.flax.models.encoders.transformer import transformer
 from pegasus.flax.models.shared import attention
 
@@ -67,17 +66,6 @@ class Seq2SeqConfig:
   performer__attention_fn_cls: str = "generalized"
   performer__generalized_nb_features: int = 256
   performer__generalized_features_type: str = "ortho"
-  topdown__block_size: int = 1024
-  topdown__segment_size: int = 1024
-  topdown__stride: int = 1024
-  topdown__num_local_layers: int = 8
-  topdown__num_segment_layers: int = 2
-  topdown__num_topdown_layers: int = 4
-  topdown__use_segments: bool = True
-  topdown__add_post_layernorms: bool = True
-  topdown__add_pos_emb_to_segments: bool = False
-  topdown__learned_segment_pos_embs: bool = False
-  topdown__stagger_local_blocks: bool = True
 
   decoder_type: str = "basic"
   decoder_use_encoded_segment: bool = False
@@ -134,19 +122,6 @@ def create_seq2seq_config_from_train_config(config, vocab_size):
       .generalized_nb_features,
       performer__generalized_features_type=config.encoder.performer
       .generalized_features_type,
-      topdown__block_size=config.encoder.topdown.block_size,
-      topdown__segment_size=config.encoder.topdown.segment_size,
-      topdown__stride=config.encoder.topdown.stride,
-      topdown__num_local_layers=config.encoder.topdown.num_local_layers,
-      topdown__num_segment_layers=config.encoder.topdown.num_segment_layers,
-      topdown__num_topdown_layers=config.encoder.topdown.num_topdown_layers,
-      topdown__use_segments=config.encoder.topdown.use_segments,
-      topdown__add_post_layernorms=config.encoder.topdown.add_post_layernorms,
-      topdown__add_pos_emb_to_segments=config.encoder.topdown
-      .add_pos_emb_to_segments,
-      topdown__learned_segment_pos_embs=config.encoder.topdown
-      .learned_segment_pos_embs,
-      topdown__stagger_local_blocks=config.encoder.topdown.stagger_local_blocks,
       decoder_type=config.decoder.decoder_type,
       decoder_use_encoded_segment=config.decoder.use_encoded_segment,
       decoder_encoded_segment_size=config.decoder.encoded_segment_size,
@@ -447,22 +422,6 @@ def get_encoder(config: Seq2SeqConfig,
         **common_args,
         attention_fn_cls=config.performer__attention_fn_cls,
         attention_fn_kwargs=attention_fn_kwargs,
-    )
-  elif config.encoder_type == "topdown":
-    args = {k: v for k, v in common_args.items() if k != "num_layers"}
-    return topdown.TopDownEncoder(
-        **args,
-        block_size=config.topdown__block_size,
-        segment_size=config.topdown__segment_size,
-        stride=config.topdown__stride,
-        num_local_layers=config.topdown__num_local_layers,
-        num_segment_layers=config.topdown__num_segment_layers,
-        num_topdown_layers=config.topdown__num_topdown_layers,
-        use_segments=config.topdown__use_segments,
-        add_post_layernorms=config.topdown__add_post_layernorms,
-        add_pos_emb_to_segments=config.topdown__add_pos_emb_to_segments,
-        learned_segment_pos_embs=config.topdown__learned_segment_pos_embs,
-        stagger_local_blocks=config.topdown__stagger_local_blocks,
     )
   else:
     raise NotImplementedError(config.encoder_type)

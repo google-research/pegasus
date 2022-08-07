@@ -16,7 +16,7 @@ r"""Convert Pegasus weights to be compatible with Flax.
 
 Sample usage:
 
-  python convert_from_pegasus_to_flax.py.py \
+  python convert_from_pegasus_to_flax.py \
     --pegasus_checkpoint_path <path> \
     --output_dir=/path/to/output
 

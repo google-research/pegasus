@@ -153,9 +153,6 @@ def get_default_config():
   # Every checkpoint is summ-evaluated
   config.checkpoint_every_steps = 1_000
 
-  # Intervals of checkpoints to keep, rather than delete after summ-eval
-  config.keep_checkpoint_every_steps = 10_000
-
   # Frequency of eval during training, e.g. every 1000 steps.
   # (For validation, not predict evaluation)
   config.eval_every_steps = 1_000
@@ -170,6 +167,9 @@ def get_default_config():
 
   # Save metrics/decodes location for evaluation, otherwise defaults to workdir
   config.eval_save_checkpoint_dir = ""
+
+  # Simply save eval output to workdir (don't label with step)
+  config.eval_only_save_to_new_workdir = True
 
   # Eval with truncated/re-decoded targets
   config.eval_with_truncate = False
@@ -221,22 +221,6 @@ def get_default_config():
   config.encoder.global_local.block_size = 64
   config.encoder.global_local.num_global_tokens = 64
   config.encoder.global_local.stagger_local_blocks = True
-
-  # topdown
-  # Note: Top-Down paper uses 1024 block size
-  # https://openreview.net/forum?id=xiXOrugVHs
-  config.encoder.topdown = ml_collections.ConfigDict()
-  config.encoder.topdown.block_size = 512
-  config.encoder.topdown.segment_size = 32
-  config.encoder.topdown.stride = 24
-  config.encoder.topdown.num_local_layers = 8
-  config.encoder.topdown.num_segment_layers = 2
-  config.encoder.topdown.num_topdown_layers = 4
-  config.encoder.topdown.use_segments = True
-  config.encoder.topdown.add_post_layernorms = False
-  config.encoder.topdown.add_pos_emb_to_segments = False
-  config.encoder.topdown.learned_segment_pos_embs = False
-  config.encoder.topdown.stagger_local_blocks = True
 
   # === Decoder params
   config.decoder = ml_collections.ConfigDict()
