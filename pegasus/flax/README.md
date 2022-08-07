@@ -88,7 +88,7 @@ python pegasus/flax/main.py \
 ```
 @misc{phang2022pegasusx,
     title={Investigating Efficiently Extending Transformers for Long Input Summarization},
-    author={Jason Phang and Yao Zhao and Mohammad Saleh and Peter J. Liu},
+    author={Jason Phang and Yao Zhao and Peter J. Liu},
     year={2022},
     eprint={2208.XXXXX},
     archivePrefix={arXiv},
