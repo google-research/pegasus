@@ -21,14 +21,11 @@ from absl import flags
 from flax import traverse_util
 from flax.core import frozen_dict
 from flax.training import checkpoints
-from flax.training import train_state
 import jax.numpy as jnp
 import numpy as np
 import optax
 
 from pegasus.flax.checkpoint_conversion import shared
-from pegasus.flax import optimizer as optimizer_lib
-from pegasus.flax import tokenizer
 
 FLAGS = flags.FLAGS
 ParamDict = Dict[str, Any]
@@ -81,12 +78,6 @@ def convert_encoder(flattened_params_dict: ParamDict,
         flattened_opt_state_dict=flattened_opt_state_dict,
         config=config, rng=rng,
     )
-  elif config.encoder.encoder_type == "top_down":
-    new_flattened_params_dict, new_flattened_opt_state_dict = convert_to_topdown(
-        flattened_params_dict=flattened_params_dict,
-        flattened_opt_state_dict=flattened_opt_state_dict,
-        config=config,
-    )
   else:
     raise ValueError(config.encoder.encoder_type)
   return new_flattened_params_dict, new_flattened_opt_state_dict
@@ -122,10 +113,9 @@ def simple_encoder_conversion(flattened_params_dict: ParamDict,
   return new_flattened_params_dict, new_flattened_opt_state_dict
 
 
-def convert_to_global_local(
-    flattened_params_dict: ParamDict,
-    flattened_opt_state_dict: OptStateDict,
-    config, rng):
+def convert_to_global_local(flattened_params_dict: ParamDict,
+                            flattened_opt_state_dict: OptStateDict,
+                            config, rng):
   """Convert to GlobalLocal encoder.
 
   Args:
@@ -193,92 +183,6 @@ def convert_to_global_local(
       new_flattened_opt_state_dict["v/shared_embedding/embedding"])
   new_flattened_opt_state_dict["v_row/encoder/Embed_0/embedding"] = new_v_row
   new_flattened_opt_state_dict["v_col/encoder/Embed_0/embedding"] = new_v_col
-  return new_flattened_params_dict, new_flattened_opt_state_dict
-
-
-def convert_to_topdown(
-    flattened_params_dict: ParamDict,
-    flattened_opt_state_dict: OptStateDict,
-    config):
-  """Convert to TopDown encoder.
-
-  Args:
-    flattened_params_dict: flattened dict of params
-    flattened_opt_state_dict: flattened dict of optimizer state
-    config: model config class
-
-  Returns:
-    new flattened_params_dict and flattened_opt_state_dict
-  """
-  dict_list = [flattened_params_dict, flattened_opt_state_dict]
-  new_dict_list = []
-  for d in dict_list:
-    new_d = d.copy()
-    for i in range(config.encoder.topdown.num_local_layers):
-      new_d = replace_key_substr(
-          d,
-          f"encoderblock_{i}/",
-          f"encoderblock_token_{i}/",
-          extra_condition=is_encoder_key,
-      )
-      new_d = replace_key_substr(
-          d,
-          f"encoderblock_token_{i}/SelfAttention_0",
-          f"encoderblock_token_{i}/LocalSelfAttention_0/SelfAttention_0",
-          extra_condition=is_encoder_key,
-      )
-    for segment_i in range(config.encoder.topdown.num_segment_layers):
-      orig_layer_i = segment_i + config.encoder.topdown.num_local_layers
-      new_d = replace_key_substr(
-          d,
-          f"encoderblock_{orig_layer_i}/",
-          f"encoderblock_segment_{segment_i}/",
-          extra_condition=is_encoder_key,
-          keep_old=True,
-      )
-    for topdown_i in range(config.encoder.topdown.num_topdown_layers):
-      orig_layer_i = topdown_i + config.encoder.topdown.num_local_layers
-      new_d = replace_key_substr(
-          d,
-          f"encoderblock_{orig_layer_i}/MlpBlock_0",
-          f"encoderblock_topdown_{topdown_i}/MlpBlock_0",
-          extra_condition=is_encoder_key,
-      )
-      new_d = replace_key_substr(
-          d,
-          f"encoderblock_{orig_layer_i}/SelfAttention_0",
-          f"encoderblock_topdown_{topdown_i}/TokenSegmentCrossAttention",
-          extra_condition=is_encoder_key,
-          keep_old=True,
-      )
-      new_d = replace_key_substr(
-          d,
-          f"encoderblock_{orig_layer_i}/SelfAttention_0",
-          f"encoderblock_topdown_{topdown_i}/TokenSelfAttention/SelfAttention_0",
-          extra_condition=is_encoder_key,
-      )
-      new_d = replace_key_substr(
-          d,
-          f"encoderblock_{orig_layer_i}/LayerNorm_0",
-          f"encoderblock_topdown_{topdown_i}/TokenPreLn",
-          extra_condition=is_encoder_key,
-          keep_old=True,
-      )
-      new_d = replace_key_substr(
-          d,
-          f"encoderblock_{orig_layer_i}/LayerNorm_0",
-          f"encoderblock_topdown_{topdown_i}/SegmentPreLn",
-          extra_condition=is_encoder_key,
-      )
-      new_d = replace_key_substr(
-          d,
-          f"encoderblock_{orig_layer_i}/LayerNorm_1",
-          f"encoderblock_topdown_{topdown_i}/FFNPreLn",
-          extra_condition=is_encoder_key,
-      )
-    new_dict_list.append(new_d)
-  # pylint: disable=unbalanced-tuple-unpacking
-  new_flattened_params_dict, new_flattened_opt_state_dict = new_dict_list
   return new_flattened_params_dict, new_flattened_opt_state_dict
 
 
@@ -557,23 +461,6 @@ def is_encoder_key(k):
   return k.startswith("encoder") or "/encoder/" in k
 
 
-def create_model_and_optimizer_state(config):
-  """Create TrainState object made on config-defined model."""
-  encoder = tokenizer.get_tokenizer(
-      tokenizer_mode=config.tokenizer_mode,
-      tokenizer_path=config.tokenizer_path,
-      tokenizer_type=config.tokenizer_type,
-      max_input_length=config.max_input_length,
-      max_target_length=config.max_target_length,
-      drop_max_input_length=config.drop_max_input_length)
-  _, model, initial_variables, _ = shared.create_model_from_config(
-      config=config, encoder=encoder, do_jit=False)
-  tx = optimizer_lib.create_optimizer(config=config)
-  state = train_state.TrainState.create(
-      apply_fn=model.apply, params=initial_variables["params"], tx=tx)
-  return state
-
-
 def load_flattened_params_and_state_dict_from_ported_checkpoint(
     config,
     checkpoint_dir: str,
@@ -591,7 +478,7 @@ def load_flattened_params_and_state_dict_from_ported_checkpoint(
   Returns:
     Flattened params and optimizer state dicts
   """
-  state = create_model_and_optimizer_state(config)
+  state = shared.create_model_and_optimizer_state(config)
   state_dict = {
       "params": state.params,
       "opt_state0": state.opt_state[0][0],
@@ -623,7 +510,7 @@ def load_flattened_params_and_state_dict_from_regular_checkpoint(
   Returns:
     Flattened params and optimizer state dicts
   """
-  state = create_model_and_optimizer_state(config)
+  state = shared.create_model_and_optimizer_state(config)
   state = checkpoints.restore_checkpoint(
       checkpoint_dir, state, step=step)
   flattened_params_dict = flatten_and_join_keys(state.params)

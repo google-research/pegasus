@@ -209,6 +209,23 @@ def get_optimizer_params_and_states(config, verbose=True):
   return state, flax_params, flax_state
 
 
+def create_model_and_optimizer_state(config):
+  """Create TrainState object made on config-defined model."""
+  encoder = tokenizer.get_tokenizer(
+      tokenizer_mode=config.tokenizer_mode,
+      tokenizer_path=config.tokenizer_path,
+      tokenizer_type=config.tokenizer_type,
+      max_input_length=config.max_input_length,
+      max_target_length=config.max_target_length,
+      drop_max_input_length=config.drop_max_input_length)
+  _, model, initial_variables, _ = create_model_from_config(
+      config=config, encoder=encoder, do_jit=False)
+  tx = optimizer_lib.create_optimizer(config=config)
+  state = train_state.TrainState.create(
+      apply_fn=model.apply, params=initial_variables["params"], tx=tx)
+  return state
+
+
 def reshape_src_weight(src_weight, src_key, config):
   """Reshape weights for conversion.
 
