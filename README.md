@@ -19,7 +19,7 @@ If you use this code or these models, please cite the following paper:
 
 # PEGASUS-X / Flax Implementation
 
-Go to [pegasus/flax](pegasus/flax) for PEGASUS-X models
+**Update (2022/08)**: Go to [pegasus/flax](pegasus/flax) for PEGASUS-X models
 
 # Results update
 

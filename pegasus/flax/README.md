@@ -2,8 +2,9 @@
 
 ## Overview
 
-This folder contains code for the Flax implementation of the PEGASUS model, as well as the PEGASUS-X model
-that is adapted for long input summarization.
+This folder contains code for the Flax implementation of the PEGASUS model, as well as the PEGASUS-X model that is adapted for long input summarization.
+
+The PEGASUS-X model is described in [Investigating Efficiently Extending Transformers for Long Input Summarization](https://arxiv.org/abs/2208.04347).
 
 ## Preparation
 
@@ -18,7 +19,7 @@ To convert PEGASUS TensorFlow checkpoints for use with the Flax code, use the sc
 
 You will also need to download the tokenizer file from [here](https://storage.googleapis.com/pegasus_ckpt/c4.unigram.newline.10pct.96000.model).
 
-### Checkpoints:
+### Checkpoints
 
 The full set of available checkpoints can be found in the [PEGASUS GCS Bucket](https://console.cloud.google.com/storage/browser/pegasus_ckpt/).
 
@@ -113,7 +114,7 @@ python pegasus/flax/main.py \
     title={Investigating Efficiently Extending Transformers for Long Input Summarization},
     author={Jason Phang and Yao Zhao and Peter J. Liu},
     year={2022},
-    eprint={2208.XXXXX},
+    eprint={2208.04347},
     archivePrefix={arXiv},
     primaryClass={cs.CL}
 }
