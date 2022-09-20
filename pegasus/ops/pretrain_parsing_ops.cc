@@ -225,7 +225,7 @@ REGISTER_OP("SentenceMaskAndEncode")
       ctx->set_output(0, ctx->Matrix(ctx->UnknownDim(), ctx->UnknownDim()));
       ctx->set_output(1, ctx->Matrix(ctx->UnknownDim(), ctx->UnknownDim()));
       ctx->set_output(2, ctx->Matrix(ctx->UnknownDim(), ctx->UnknownDim()));
-      return Status::OK();
+      return Status();
     });
 class SentenceMaskAndEncodeOp : public OpKernel {
  public:

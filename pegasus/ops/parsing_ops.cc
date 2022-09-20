@@ -56,7 +56,7 @@ REGISTER_OP("Encode")
     .Attr("has_length_token: bool = False")
     .SetShapeFn([](InferenceContext* ctx) {
       ctx->set_output(0, ctx->Matrix(ctx->UnknownDim(), ctx->UnknownDim()));
-      return Status::OK();
+      return Status();
     });
 
 class EncodeOp : public OpKernel {
@@ -106,7 +106,7 @@ REGISTER_OP("Decode")
     .Attr("encoder_type: string")
     .SetShapeFn([](InferenceContext* ctx) {
       ctx->set_output(0, ctx->Vector(ctx->UnknownDim()));
-      return Status::OK();
+      return Status();
     });
 
 class DecodeOp : public OpKernel {
@@ -144,7 +144,7 @@ REGISTER_OP("ParseJson")
     .SetShapeFn([](InferenceContext* ctx) {
       ctx->set_output(0, ctx->Scalar());
       ctx->set_output(1, ctx->Scalar());
-      return Status::OK();
+      return Status();
     });
 
 class ParseJsonOp : public OpKernel {
