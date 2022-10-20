@@ -14,6 +14,7 @@
 
 #include "pegasus/ops/rouge.h"
 
+#include <memory>
 #include <vector>
 
 #include "testing/base/public/gmock.h"
@@ -78,26 +79,26 @@ TEST(RougeDistanceTest, Ngrams) {
   EXPECT_NEAR(0.57, compute_similarity("aa bb cc aa bb", "aa bb aa bb"), 0.01);
 
   // Test ROUGE_RECALL.
-  rouge = absl::make_unique<RougeDistance>(2 /* ngram_size */, ROUGE_RECALL);
+  rouge = std::make_unique<RougeDistance>(2 /* ngram_size */, ROUGE_RECALL);
   // All bigrams from the reference sentence are found in the candidate.
   EXPECT_EQ(1, compute_similarity("a b c", "a b c d e f"));
   // Half of the bigrams from the reference sentence are found in the candidate.
   EXPECT_EQ(0.5, compute_similarity("aa bb cc dd ee", "aa bb dd ee ff"));
 
   // Test ROUGE_PRECISION.
-  rouge = absl::make_unique<RougeDistance>(2 /* ngram_size */, ROUGE_PRECISION);
+  rouge = std::make_unique<RougeDistance>(2 /* ngram_size */, ROUGE_PRECISION);
   // All bigrams from the candidate sentence are found in the reference.
   EXPECT_EQ(1, compute_similarity("a b c d e f", "a b c"));
   // Half of the bigrams from the candidate sentence are found in the reference.
   EXPECT_EQ(0.5, compute_similarity("aa bb dd ee ff", "aa bb cc dd ee"));
 
   // Test trigrams.
-  rouge = absl::make_unique<RougeDistance>(3 /* ngram_size */, ROUGE_F);
+  rouge = std::make_unique<RougeDistance>(3 /* ngram_size */, ROUGE_F);
   EXPECT_NEAR(0.33, compute_similarity("aa bb cc dd ee", "aa cc dd ee ff"),
               0.01);
 
   // Test removing special tokens.
-  rouge = absl::make_unique<RougeDistance>(1 /* ngram_size */, ROUGE_RECALL);
+  rouge = std::make_unique<RougeDistance>(1 /* ngram_size */, ROUGE_RECALL);
   // Test word breaking by non alpha numeric.
   EXPECT_EQ(1, compute_similarity("a#b c", "a!b!@$c"));
   // Test removing non alpha numeric.
@@ -196,8 +197,8 @@ TEST(RougeDistanceDeduplicateTest, Ngrams) {
       0.01);
 
   // test when ngram_size is larger than 1
-  rouge = absl::make_unique<RougeDistance>(2 /* ngram_size */, ROUGE_F, "",
-                                           ROUGE_OPTION_DEDUPLICATE);
+  rouge = std::make_unique<RougeDistance>(2 /* ngram_size */, ROUGE_F, "",
+                                          ROUGE_OPTION_DEDUPLICATE);
   // Identical sentences after deduplication.
   EXPECT_EQ(1, compute_similarity("z z z", "z z"));
 }
@@ -243,8 +244,8 @@ TEST(RougeDistanceLogTest, Ngrams) {
               0.01);
 
   // test when ngram_size is larger than 1
-  rouge = absl::make_unique<RougeDistance>(2 /* ngram_size */, ROUGE_F, "",
-                                           ROUGE_OPTION_LOG);
+  rouge = std::make_unique<RougeDistance>(2 /* ngram_size */, ROUGE_F, "",
+                                          ROUGE_OPTION_LOG);
   // Identical sentences.
   EXPECT_EQ(1, compute_similarity("z z", "z z"));
   // A case
@@ -276,7 +277,7 @@ TEST(RougeDistanceTest, LCS) {
   EXPECT_NEAR(0.5, compute_similarity("a b c", "a d b e f c"), 0.01);
 
   // Test ROUGE_L Recall.
-  rouge = absl::make_unique<RougeDistance>(1 /* ngram_size */, ROUGE_L_R);
+  rouge = std::make_unique<RougeDistance>(1 /* ngram_size */, ROUGE_L_R);
   // LCS is 2 "a c", L_reference = 4.
   EXPECT_NEAR(0.5, compute_similarity("a b c d", "a aa bb c cc"), 0.01);
   // LCS is 3 "a b c".
@@ -285,7 +286,7 @@ TEST(RougeDistanceTest, LCS) {
   EXPECT_NEAR(0.5, compute_similarity("a d b e f c", "a b c"), 0.01);
 
   // Test ROUGE_L F1.
-  rouge = absl::make_unique<RougeDistance>(1 /* ngram_size */, ROUGE_L_F);
+  rouge = std::make_unique<RougeDistance>(1 /* ngram_size */, ROUGE_L_F);
   // Identical sentences.
   EXPECT_NEAR(1.0, compute_similarity("a b c d", "a b c d"), 0.01);
   // LCS is 3 "a b c", precision = 0.5, recall = 1.0.

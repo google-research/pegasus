@@ -14,6 +14,8 @@
 
 #include "pegasus/ops/text_encoder_utils.h"
 
+#include <memory>
+
 #include "pegasus/ops/sp_text_encoder.h"
 #include "pegasus/ops/subword_text_encoder.h"
 #include "pegasus/ops/text_encoder.h"
@@ -23,15 +25,15 @@ namespace pegasus {
 std::unique_ptr<TextEncoder> CreateTextEncoder(
     absl::string_view encoder_type, absl::string_view vocab_filename) {
   if (encoder_type == "subword") {
-    return absl::make_unique<SubwordTextEncoder>(vocab_filename);
+    return std::make_unique<SubwordTextEncoder>(vocab_filename);
   } else if (encoder_type == "sentencepiece") {
-    return absl::make_unique<SpTextEncoder>(vocab_filename, false);
+    return std::make_unique<SpTextEncoder>(vocab_filename, false);
   } else if (encoder_type == "sentencepiece_newline") {
-    return absl::make_unique<SpTextEncoder>(vocab_filename, true);
+    return std::make_unique<SpTextEncoder>(vocab_filename, true);
   } else if (encoder_type == "sentencepiece_noshift") {
-    return absl::make_unique<SpTextEncoder>(vocab_filename, false, 0);
+    return std::make_unique<SpTextEncoder>(vocab_filename, false, 0);
   } else if (encoder_type == "sentencepiece_noshift_newline") {
-    return absl::make_unique<SpTextEncoder>(vocab_filename, true, 0);
+    return std::make_unique<SpTextEncoder>(vocab_filename, true, 0);
   }
   LOG(FATAL) << "Unknown text encoder";
 }

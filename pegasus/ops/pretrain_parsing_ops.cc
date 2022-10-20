@@ -282,7 +282,7 @@ class SentenceMaskAndEncodeOp : public OpKernel {
       rouge_compute_option_arg = ROUGE_OPTION_LOG;
     else
       rouge_compute_option_arg = ROUGE_OPTION_STANDARD;
-    rouge_ = absl::make_unique<RougeDistance>(
+    rouge_ = std::make_unique<RougeDistance>(
         rouge_ngrams_size /*ngrams_size*/, rouge_metric_type_arg,
         rouge_stopwords_filename, rouge_compute_option_arg);
     OP_REQUIRES_OK(ctx, ctx->GetAttr("rouge_noise_ratio", &rouge_noise_ratio_));
