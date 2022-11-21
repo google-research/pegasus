@@ -40,13 +40,13 @@ setuptools.setup(
         'rouge-score',
         'sacrebleu',
         'sentencepiece',
-        'tensorflow==1.15',
+        'tensorflow==2.9.3',
         'tensorflow-text==1.15.0rc0',
         'tfds-nightly',
         'tensor2tensor==1.15.0',
     ],
     extras_require={
-        'tensorflow': ['tensorflow==1.15'],
+        'tensorflow': ['tensorflow==2.9.3'],
     },
     classifiers=[
         'Development Status :: 4 - Beta',
