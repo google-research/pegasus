@@ -17,6 +17,10 @@ If you use this code or these models, please cite the following paper:
 }
 ```
 
+# PEGASUS-X / Flax Implementation
+
+**Update (2022/08)**: Go to [pegasus/flax](pegasus/flax) for PEGASUS-X models
+
 # Results update
 
 We train a pegasus model with sampled gap sentence ratios on both C4 and HugeNews, and stochastically sample important sentences. The updated the results are reported in this table.
