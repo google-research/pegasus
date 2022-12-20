@@ -49,14 +49,11 @@ UChar32 LastCodePoint(absl::string_view text) {
   UChar32 c;
   UChar32 ret = -1;
   int idx = std::max(static_cast<int>(text.length()) - 4, 0);
-  while (true) {
+  do {
     U8_NEXT(text, idx, text.length(), c);
-    if (c > 0) {
-      ret = c;
-    } else {
-      break;
-    }
-  }
+    ret = c;
+  } while (idx < text.length());
+
   return ret;
 }
 
@@ -98,12 +95,12 @@ void SubwordTextEncoder::Encode(absl::string_view text,
   UChar32 c;
   UChar32 next_c;
   U8_NEXT(text, token_end, text.length(), c);
-  while (token_end <= text.length()) {
+  while (token_end < text.length()) {
     int next_end = token_end;
     U8_NEXT(text, next_end, text.length(), next_c);
     // Subtoken break when switching from non-alphanum to alphanum, or when
     // reaching the end of the original token.
-    if (u_isalnum(next_c) != u_isalnum(c) || token_end >= text.length() ||
+    if (u_isalnum(next_c) != u_isalnum(c) ||
         token_end - token_start > kMaxTokenLength) {
       absl::string_view next_token =
           text.substr(token_start, token_end - token_start);
@@ -114,6 +111,11 @@ void SubwordTextEncoder::Encode(absl::string_view text,
     }
     token_end = next_end;
     c = next_c;
+  }
+  absl::string_view next_token =
+      text.substr(token_start, token_end - token_start);
+  if (next_token != " ") {
+    EncodeSubtokens(next_token, ids);
   }
 }
 
