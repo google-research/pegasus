@@ -87,7 +87,7 @@ SubwordTextEncoder::SubwordTextEncoder(absl::string_view vocab_filename) {
 }
 
 void SubwordTextEncoder::Encode(absl::string_view text,
-                                std::vector<int64>* ids) const {
+                                std::vector<int64_t>* ids) const {
   CHECK(ids != nullptr) << "The output vector has to be allocated.";
 
   int token_start = 0;
@@ -120,7 +120,7 @@ void SubwordTextEncoder::Encode(absl::string_view text,
 }
 
 void SubwordTextEncoder::EncodeSubtokens(absl::string_view token,
-                                         std::vector<int64>* ids) const {
+                                         std::vector<int64_t>* ids) const {
   std::string token_s = EscapeToken(token);
   token = token_s;
   int subtoken_start = 0;
@@ -182,7 +182,7 @@ std::string SubwordTextEncoder::UnescapeToken(absl::string_view token) const {
   return absl::StrReplaceAll(trimmed, replacements);
 }
 
-std::string SubwordTextEncoder::Decode(const std::vector<int64>& ids) const {
+std::string SubwordTextEncoder::Decode(const std::vector<int64_t>& ids) const {
   std::string text;
   std::string token;
   for (auto id : ids) {
@@ -207,38 +207,38 @@ std::string SubwordTextEncoder::Decode(const std::vector<int64>& ids) const {
   return text;
 }
 
-bool SubwordTextEncoder::CheckEndOfToken(int64 id) {
+bool SubwordTextEncoder::CheckEndOfToken(int64_t id) {
   std::string subtoken = vocab_by_id_.at(id);
   return (std::strcmp(&subtoken.back(), "_") == 0);
 }
 
 void SubwordTextEncoder::WholeWordSegment(
-    const std::vector<int64>& input_ids_vec,
-    std::vector<std::pair<int32, int32>>* word_start_end_pairs,
+    const std::vector<int64_t>& input_ids_vec,
+    std::vector<std::pair<int32_t, int32_t>>* word_start_end_pairs,
     const int shift_special_token_id) {
   word_start_end_pairs->clear();
   word_start_end_pairs->reserve(input_ids_vec.size());
   // a pointer pointing the starting position of the current word
-  int32 word_start_pos = 0;
+  int32_t word_start_pos = 0;
 
   for (int i = 0; i < input_ids_vec.size(); i++) {    // traverse each subtoken
-    int64 subtoken_encoded_id = input_ids_vec.at(i);  // the id of subtoken
+    int64_t subtoken_encoded_id = input_ids_vec.at(i);  // the id of subtoken
     if (subtoken_encoded_id < shift_special_token_id) {
       // check if special token
       if (i > word_start_pos)  // if there are subtokens waiting to be collected
         word_start_end_pairs->push_back(
-            std::pair<int32, int32>(word_start_pos, i));
+            std::pair<int32_t, int32_t>(word_start_pos, i));
       word_start_pos = i + 1;  // move the pointer forward
     } else if (CheckEndOfToken(subtoken_encoded_id)) {
       // if the subtoken can be the ending of a word, then collect the word
       word_start_end_pairs->push_back(
-          std::pair<int32, int32>(word_start_pos, i + 1));
+          std::pair<int32_t, int32_t>(word_start_pos, i + 1));
       word_start_pos = i + 1;  // move the pointer forward
     }
   }
   // in case some subtokens are still waiting to be collected
   if (word_start_pos < input_ids_vec.size())
     word_start_end_pairs->push_back(
-        std::pair<int32, int32>(word_start_pos, input_ids_vec.size()));
+        std::pair<int32_t, int32_t>(word_start_pos, input_ids_vec.size()));
 }
 }  // namespace pegasus

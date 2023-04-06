@@ -202,8 +202,8 @@ RougeSentenceData::RougeSentenceData(
 
     ngrams_.assign(ngrams_map_.begin(), ngrams_map_.end());
     std::sort(ngrams_.begin(), ngrams_.end(),
-              [](const std::pair<unsigned long long, int>& left,
-                 const std::pair<unsigned long long, int>& right) {
+              [](const std::pair<unsigned long long_t, int>& left,
+                 const std::pair<unsigned long long_t, int>& right) {
                 return left.first < right.first;
               });
 
@@ -227,8 +227,8 @@ RougeSentenceData RougeSentenceData::merge_rouge_sentence_data(
                                        rouge_sentence_data.ngrams_map_.end());
     std::sort(rouge_sentence_data.ngrams_.begin(),
               rouge_sentence_data.ngrams_.end(),
-              [](const std::pair<unsigned long long, int>& left,
-                 const std::pair<unsigned long long, int>& right) {
+              [](const std::pair<unsigned long long_t, int>& left,
+                 const std::pair<unsigned long long_t, int>& right) {
                 return left.first < right.first;
               });
 

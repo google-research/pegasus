@@ -57,24 +57,24 @@ using ::tensorflow::tstring;
 using ::tensorflow::shape_inference::InferenceContext;
 
 // Padding token ID.
-constexpr int64 kPadTokenId = 0;
+constexpr int64_t kPadTokenId = 0;
 
 // End of Sequence token ID.
-constexpr int64 kEosTokenId = 1;
+constexpr int64_t kEosTokenId = 1;
 
 // Masked Sentence token ID.
-constexpr int64 kMaskSentenceTokenId = 2;
+constexpr int64_t kMaskSentenceTokenId = 2;
 
 // Masked Word token ID.
-constexpr int64 kMaskWordTokenId = 3;
+constexpr int64_t kMaskWordTokenId = 3;
 
 // Special token to represent each pretraining task.
-constexpr int64 kTaskRandomTokenId = 5;
-constexpr int64 kTaskLeadTokenId = 6;
-constexpr int64 kTaskRougeTokenId = 7;
+constexpr int64_t kTaskRandomTokenId = 5;
+constexpr int64_t kTaskLeadTokenId = 6;
+constexpr int64_t kTaskRougeTokenId = 7;
 
-const int64 _PRETRAIN_TASKS_TOKENS[] = {kTaskRandomTokenId, kTaskLeadTokenId,
-                                        kTaskRougeTokenId};
+const int64_t _PRETRAIN_TASKS_TOKENS[] = {kTaskRandomTokenId, kTaskLeadTokenId,
+                                          kTaskRougeTokenId};
 const int _NUM_PRETRAIN_TASKS =
     *(&_PRETRAIN_TASKS_TOKENS + 1) - _PRETRAIN_TASKS_TOKENS;
 
@@ -88,12 +88,12 @@ int MaxNumSentences(int max_input_len, int max_target_len, float mask_ratio) {
 }
 
 // Encode sentence by sentence into ids.
-std::vector<std::vector<int64>> EncodeSentences(
+std::vector<std::vector<int64_t>> EncodeSentences(
     const std::vector<std::string>& sentences_vec,
     const std::unique_ptr<TextEncoder>& encoder) {
-  std::vector<std::vector<int64>> sentences_ids_vec;
+  std::vector<std::vector<int64_t>> sentences_ids_vec;
   for (int i = 0; i < sentences_vec.size(); i++) {
-    std::vector<int64> ids_vec;
+    std::vector<int64_t> ids_vec;
     encoder->Encode(sentences_vec[i], &ids_vec);
     sentences_ids_vec.push_back(ids_vec);
   }
@@ -102,8 +102,8 @@ std::vector<std::vector<int64>> EncodeSentences(
 
 // Get input_t and target_t.
 void GetInputAndTarget(
-    std::vector<int64>* input_ids_vec, std::vector<int64>* target_ids_vec,
-    std::vector<std::vector<int64>>* sentences_ids_vec,
+    std::vector<int64_t>* input_ids_vec, std::vector<int64_t>* target_ids_vec,
+    std::vector<std::vector<int64_t>>* sentences_ids_vec,
     const std::vector<int>& indices,
     const std::vector<float>& mask_sentence_options_cumulative_prob) {
   absl::BitGen gen;
@@ -144,8 +144,8 @@ void GetInputAndTarget(
   input_ids_vec->push_back(kEosTokenId);
 }
 
-void GetMLM(std::vector<int64>* input_ids_vec, std::vector<int64>* mlm_ids_vec,
-            float masked_words_ratio,
+void GetMLM(std::vector<int64_t>* input_ids_vec,
+            std::vector<int64_t>* mlm_ids_vec, float masked_words_ratio,
             const std::vector<float>& mask_words_options_cumulative_prob,
             const std::unique_ptr<TextEncoder>& encoder,
             const int shift_special_token_id) {
@@ -156,7 +156,7 @@ void GetMLM(std::vector<int64>* input_ids_vec, std::vector<int64>* mlm_ids_vec,
 
   // the collection of starting and end positions of each word
   // each pair: [start_position, end_position)
-  std::vector<std::pair<int32, int32>> word_start_end_pairs;
+  std::vector<std::pair<int32_t, int32_t>> word_start_end_pairs;
 
   // segment whole word (special tokens ignored)
   encoder->WholeWordSegment(*input_ids_vec, &word_start_end_pairs,
@@ -295,9 +295,9 @@ class SentenceMaskAndEncodeOp : public OpKernel {
 
   void Compute(OpKernelContext* ctx) override {
     const std::string& origin_text = ctx->input(0).scalar<tstring>()();
-    const int32 max_input_len = ctx->input(1).scalar<int32>()();
-    const int32 max_target_len = ctx->input(2).scalar<int32>()();
-    const int32 max_total_words = ctx->input(3).scalar<int32>()();
+    const int32_t max_input_len = ctx->input(1).scalar<int32_t>()();
+    const int32_t max_target_len = ctx->input(2).scalar<int32_t>()();
+    const int32_t max_total_words = ctx->input(3).scalar<int32_t>()();
 
     Tensor* input_ids;
     Tensor* target_ids;
@@ -314,11 +314,11 @@ class SentenceMaskAndEncodeOp : public OpKernel {
                    ctx->allocate_output(3, TensorShape({1}), &num_sentences));
     OP_REQUIRES_OK(
         ctx, ctx->allocate_output(4, TensorShape({1}), &num_masked_sentences));
-    input_ids->flat<int64>().setZero();
-    target_ids->flat<int64>().setZero();
-    mlm_ids->flat<int64>().setZero();
-    num_sentences->flat<int32>().setZero();
-    num_masked_sentences->flat<int32>().setZero();
+    input_ids->flat<int64_t>().setZero();
+    target_ids->flat<int64_t>().setZero();
+    mlm_ids->flat<int64_t>().setZero();
+    num_sentences->flat<int32_t>().setZero();
+    num_masked_sentences->flat<int32_t>().setZero();
 
     std::string text = "";
     // set a limit on the total number of words in the text.
@@ -337,14 +337,14 @@ class SentenceMaskAndEncodeOp : public OpKernel {
     }
 
     std::vector<std::string> sentences_vec = SentenceSegment(text);
-    num_sentences->flat<int32>()(0) = sentences_vec.size();
+    num_sentences->flat<int32_t>()(0) = sentences_vec.size();
 
-    std::vector<std::vector<int64>> sentences_ids_vec =
+    std::vector<std::vector<int64_t>> sentences_ids_vec =
         EncodeSentences(sentences_vec, encoder_);
 
-    std::vector<int64> input_ids_vec;
-    std::vector<int64> target_ids_vec;
-    std::vector<int64> mlm_ids_vec;
+    std::vector<int64_t> input_ids_vec;
+    std::vector<int64_t> target_ids_vec;
+    std::vector<int64_t> mlm_ids_vec;
 
     absl::BitGen gen;
     std::vector<int> indices;
@@ -376,7 +376,7 @@ class SentenceMaskAndEncodeOp : public OpKernel {
                                                     masked_sentence_ratio_);
     } else if (strategy_ == "hybrid") {
       int choice = absl::Uniform(gen, 0, _NUM_PRETRAIN_TASKS);
-      int64 choice_token_id = _PRETRAIN_TASKS_TOKENS[choice];
+      int64_t choice_token_id = _PRETRAIN_TASKS_TOKENS[choice];
       if (choice_token_id == kTaskRandomTokenId)
         indices =
             GetSentenceIndicesByRandom(sentences_vec, masked_sentence_ratio_);
@@ -398,7 +398,7 @@ class SentenceMaskAndEncodeOp : public OpKernel {
     VecToTensor(input_ids_vec, input_ids, kPadTokenId, 0);
     VecToTensor(target_ids_vec, target_ids, kPadTokenId, 0);
     VecToTensor(mlm_ids_vec, mlm_ids, kPadTokenId, 0);
-    num_masked_sentences->flat<int32>()(0) = indices.size();
+    num_masked_sentences->flat<int32_t>()(0) = indices.size();
   }
 
  private:

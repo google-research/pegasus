@@ -42,10 +42,10 @@ using ::tensorflow::tstring;
 using ::tensorflow::shape_inference::InferenceContext;
 
 // Padding token ID.
-constexpr int64 kPadTokenId = 0;
+constexpr int64_t kPadTokenId = 0;
 
 // End of Sequence token ID.
-constexpr int64 kEosTokenId = 1;
+constexpr int64_t kEosTokenId = 1;
 
 REGISTER_OP("Encode")
     .Input("text: string")
@@ -70,14 +70,14 @@ class EncodeOp : public OpKernel {
     const Tensor& texts = ctx->input(0);
     CHECK_EQ(texts.dims(), 1);
     const int batch_size = texts.dim_size(0);
-    const int32 max_len = ctx->input(1).scalar<int32>()();
+    const int32_t max_len = ctx->input(1).scalar<int32_t>()();
 
     Tensor* ids;
     OP_REQUIRES_OK(
         ctx, ctx->allocate_output(0, TensorShape({batch_size, max_len}), &ids));
-    ids->flat<int64>().setZero();
+    ids->flat<int64_t>().setZero();
     for (int i = 0; i < batch_size; i++) {
-      std::vector<int64> ids_vec;
+      std::vector<int64_t> ids_vec;
       const std::string& text = texts.vec<tensorflow::tstring>()(i);
       if (has_length_token_) {
         std::string::size_type length_token_index;
@@ -125,7 +125,7 @@ class DecodeOp : public OpKernel {
         ctx, ctx->allocate_output(0, TensorShape({batch_size}), &decodes));
 
     for (int i = 0; i < batch_size; i++) {
-      std::vector<int64> vec;
+      std::vector<int64_t> vec;
       TensorToVec(ids, &vec, i);
       decodes->vec<tensorflow::tstring>()(i) = encoder_->Decode(vec);
     }

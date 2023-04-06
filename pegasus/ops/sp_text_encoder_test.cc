@@ -48,21 +48,21 @@ TEST_F(SpTextEncoderTest, InvertibleNewline) {
       "sp_test.model",
       true,  // preserve new line
       0);
-  std::vector<int64> t;
+  std::vector<int64_t> t;
   std::string in_text = "the quick\nbrown fox jumps over the lazy dog";
   encoder.Encode(in_text, &t);
   EXPECT_EQ(in_text, encoder.Decode(t));
 }
 
 TEST_F(SpTextEncoderTest, Invertible) {
-  std::vector<int64> t;
+  std::vector<int64_t> t;
   std::string in_text = "the quick brown fox jumps over the lazy dog";
   encoder_.Encode(in_text, &t);
   EXPECT_EQ(in_text, encoder_.Decode(t));
 }
 
 TEST_F(SpTextEncoderTest, InvertibleOffset) {
-  std::vector<int64> t;
+  std::vector<int64_t> t;
   std::string in_text = "the quick brown fox jumps over the lazy dog";
   SpTextEncoder encoder(
       "third_party/py/pegasus/ops/testdata/"
@@ -74,26 +74,26 @@ TEST_F(SpTextEncoderTest, InvertibleOffset) {
 }
 
 TEST_F(SpTextEncoderTest, EncodesSubTokens) {
-  std::vector<int64> t;
+  std::vector<int64_t> t;
   encoder_.Encode("the quick brown fox jumps over the lazy dog", &t);
-  EXPECT_THAT(t, ContainerEq(std::vector<int64>{264, 1807, 3516, 1557, 7965,
-                                                561, 501, 1051, 581, 264, 545,
-                                                7987, 7944, 3473}));
+  EXPECT_THAT(t, ContainerEq(std::vector<int64_t>{264, 1807, 3516, 1557, 7965,
+                                                  561, 501, 1051, 581, 264, 545,
+                                                  7987, 7944, 3473}));
 }
 
 TEST_F(SpTextEncoderTest, DecodesUnicodeSubTokens) {
-  std::vector<int64> t;
+  std::vector<int64_t> t;
   std::string in_text = "ɧęĻĽÒ";
   encoder_.Encode(in_text, &t);
   EXPECT_EQ(in_text, encoder_.Decode(t));
 }
 
 TEST_F(SpTextEncoderTest, EncodesUnicodeCodePoints) {
-  std::vector<int64> t, t1;
+  std::vector<int64_t> t, t1;
   std::string in_text = "⻦ ⻭";
   encoder_.Encode(in_text, &t);
-  EXPECT_THAT(t, ContainerEq(std::vector<int64>{7927, 230, 191, 170, 7927, 230,
-                                                191, 177}));
+  EXPECT_THAT(t, ContainerEq(std::vector<int64_t>{7927, 230, 191, 170, 7927,
+                                                  230, 191, 177}));
   EXPECT_EQ(in_text, encoder_.Decode(t));
 
   SpTextEncoder encoder_offset(
@@ -103,8 +103,8 @@ TEST_F(SpTextEncoderTest, EncodesUnicodeCodePoints) {
       10);
   EXPECT_EQ(8010, encoder_offset.VocabSize());
   encoder_offset.Encode(in_text, &t1);
-  EXPECT_THAT(t1, ContainerEq(std::vector<int64>{7937, 240, 201, 180, 7937, 240,
-                                                 201, 187}));
+  EXPECT_THAT(t1, ContainerEq(std::vector<int64_t>{7937, 240, 201, 180, 7937,
+                                                   240, 201, 187}));
   EXPECT_EQ(encoder_.Decode({0, 1}), encoder_offset.Decode({0, 1}));
 }
 
@@ -113,19 +113,19 @@ TEST_F(SpTextEncoderTest, StripEosPad) {
       encoder_.Decode({264, 1807, 3516, 1557, 7965, 561, 501, 1051, 581, 264,
                        545, 7987, 7944, 3473, 0});
 
-  std::vector<int64> t;
+  std::vector<int64_t> t;
   encoder_.Encode(text, &t);
 
-  EXPECT_THAT(t, ContainerEq(std::vector<int64>{264, 1807, 3516, 1557, 7965,
-                                                561, 501, 1051, 581, 264, 545,
-                                                7987, 7944, 3473}));
+  EXPECT_THAT(t, ContainerEq(std::vector<int64_t>{264, 1807, 3516, 1557, 7965,
+                                                  561, 501, 1051, 581, 264, 545,
+                                                  7987, 7944, 3473}));
 }
 
 TEST_F(SpTextEncoderTest, WholeWordSegment) {
-  std::vector<int64> t;
+  std::vector<int64_t> t;
   std::string in_text = "the beautifully";
   encoder_.Encode(in_text, &t);
-  std::vector<std::pair<int32, int32>> word_start_end_pairs;
+  std::vector<std::pair<int32_t, int32_t>> word_start_end_pairs;
   EXPECT_EQ(t.size(), 3);
   encoder_.WholeWordSegment(t, &word_start_end_pairs, 105);
   EXPECT_EQ(word_start_end_pairs.size(), 2);
@@ -136,8 +136,8 @@ TEST_F(SpTextEncoderTest, WholeWordSegment) {
 }
 
 TEST_F(SpTextEncoderTest, WholeWordSegmentWithSpecialToken) {
-  std::vector<int64> t = {246, 0, 3409, 1882};
-  std::vector<std::pair<int32, int32>> word_start_end_pairs;
+  std::vector<int64_t> t = {246, 0, 3409, 1882};
+  std::vector<std::pair<int32_t, int32_t>> word_start_end_pairs;
   encoder_.WholeWordSegment(t, &word_start_end_pairs, 105);
   EXPECT_EQ(word_start_end_pairs.size(), 2);
   EXPECT_EQ(word_start_end_pairs.at(0).first, 0);

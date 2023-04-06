@@ -38,7 +38,7 @@ int GetNumMaskedSentences(const int total_number_sentences,
 std::vector<int> GetSentenceIndicesByRandom(
     const std::vector<std::string>& sentences_vec,
     float masked_sentence_ratio) {
-  std::vector<int32> indices;
+  std::vector<int32_t> indices;
   indices.reserve(sentences_vec.size());
   for (int i = 0; i < sentences_vec.size(); i++) indices.push_back(i);
 

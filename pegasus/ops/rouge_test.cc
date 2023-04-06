@@ -369,7 +369,7 @@ TEST(RougeGreedySimilaritiesTest, Ngrams) {
       new RougeDistance(2 /*ngrams_size*/, ROUGE_RECALL));
   auto compute_similarities_greedily =
       [&](const std::string& left, const std::vector<std::string>& right_vec,
-          float min_similarity, int32 max_matches) -> std::vector<float> {
+          float min_similarity, int32_t max_matches) -> std::vector<float> {
     auto left_data = rouge->PrecomputeSentenceData(left);
     std::vector<std::shared_ptr<RougeSentenceData>> right_data_vec;
     for (const auto right : right_vec) {
