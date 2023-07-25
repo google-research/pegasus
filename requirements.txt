@@ -7,4 +7,4 @@ sentencepiece
 tensorflow-text==1.15.0rc0
 tensor2tensor==1.15.0
 tensorflow-datasets==2.1.0
-tensorflow-gpu==1.15.2
+tensorflow-gpu==2.12.0
