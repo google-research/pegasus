@@ -50,7 +50,7 @@ flags.DEFINE_string("text_metrics_pattern",
                     "text_metrics-*-eval_decode_dev.txt",
                     "Text_metrics patterns to select best ckpt.")
 flags.DEFINE_boolean("evaluate_test", False, "Calculate number on test set.")
-flags.DEFINE_boolean("enable_logging", True, "Enable logging of model ouputs.")
+flags.DEFINE_boolean("enable_logging", True, "Enable logging of model outputs.")
 
 
 def _extract_text_metrics(filename):
