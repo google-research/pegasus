@@ -1,6 +1,6 @@
 # PEGASUS library
 
-Pre-training with Extracted Gap-sentences for Abstractive SUmmarization
+Pre-training with Extracted Gap-sentences for Abstractive Summarization
 Sequence-to-sequence models, or PEGASUS, uses self-supervised objective Gap
 Sentences Generation (GSG) to train a transformer encoder-decoder model. The
 paper can be found on [arXiv](https://arxiv.org/abs/1912.08777). ICML 2020 accepted.
@@ -148,7 +148,7 @@ def my_param(param_overrides):
 
 ## Evaluation metrics.
 
-Evaluation results can be found in `mode_dir`. Summarization metrics are automatically
+Evaluation results can be found in `model_dir`. Summarization metrics are automatically
 calculated for each evaluation point.
 
 -   [ROUGE](https://www.aclweb.org/anthology/W04-1013.pdf) is the main metric
